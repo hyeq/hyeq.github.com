@@ -1,0 +1,929 @@
+---
+layout: single
+title: |
+    Change Log for the Hybrid Equations Toolbox
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       New Features in Version 3.0
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Changes Between Builds
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    New Features in Version 3.0
+   </h2>
+   <p>
+    Version 3.0 of the Hybrid Equations Toolbox is a substantial update to components throughout the toolbox.
+   </p>
+   <p>
+    <h3>
+     MATLAB-based Library
+    </h3>
+   </p>
+   <p>
+    The following improvements were made to the MATLAB-based Hybrid System solver:
+   </p>
+   <p>
+    <b>
+     Object-Oriented Definitions of Hybrid Systems.
+    </b>
+    A hybrid system can now be defined in a single file by creating a subclass of the
+    <tt>HybridSystem</tt>
+    class. This allows for the definition of multiple hybrid systems without name conflicts and enables the definition of system parameters without using global variables.
+   </p>
+   <p>
+    <b>
+     Interconnected Hybrid Systems.
+    </b>
+    It is now possible, in MATLAB, to define several hybrid subsystem systems with inputs and outputs, such as a plant and a controller, then then link them together to form a composite hybrid system. Solutions to the composite system can be computed like any other system.
+   </p>
+   <p>
+    <b>
+     More Informative Solutions.
+    </b>
+    The new
+    <tt>HybridSolution</tt>
+    class includes additional useful information about solutions such as the duration of each interval of flow and the reason the solution terminated. Methods are provided for modifying solution objects by, e.g., applying a map to transform the state values or truncating the time span.
+   </p>
+   <p>
+    <b>
+     Improved Progress Updates.
+    </b>
+    While computing solutions, a progress bar displays the percent completed and the current hybrid time. The progress updates during both flows and at jumps (in v2.04, progress updates were only printed to the command line at jumps).
+   </p>
+   <p>
+    <b>
+     Improved Plotting.
+    </b>
+    Plotting hybrid arcs is easier and allows more control over the appearance of plots. New features include
+   </p>
+   <div>
+    <ol>
+     <li>
+      easy control of the marker and line styles for flows and jumps,
+     </li>
+     <li>
+      ability to hide portions of hybrid arcs from plots using a filter (useful for plotting different modes in different styles),
+     </li>
+     <li>
+      support for legends,
+     </li>
+     <li>
+      automatic creation of subplots for hybrid arcs with multiple components, and
+     </li>
+     <li>
+      ability to set default plot settings.
+     </li>
+    </ol>
+   </div>
+   <p>
+    Plotting methods are up to 200x faster than in v2.04 for hybrid arcs with many jumps.
+   </p>
+   <p>
+    <b>
+     Bug Fix.
+    </b>
+    Fixed a bug in v2.04 where
+    <tt>HyEQsolver</tt>
+    would sometimes generate solutions that erroneously flowed outside
+    \(C\)
+    .
+   </p>
+   <p>
+    <b>
+     Validation and error reporting.
+    </b>
+    New error checking features catch programming mistakes earlier when using the toolbox. Over 350 automated tests verify the correctness of the toolbox's code.
+   </p>
+   <p>
+    <b>
+     Code Autocompletion.
+    </b>
+    The Hybrid Equations Toolbox supports MATLAB's auto-completion (introduced to the MATLAB code editor in R2021b).
+   </p>
+   <p>
+    <h3>
+     Simulink-based Library
+    </h3>
+   </p>
+   <p>
+    The following improvements were made to the Simulink-based Hybrid System solver:
+   </p>
+   <p>
+    <b>
+     Hybrid System with External Functions and Inputs.
+    </b>
+    A new Simulink block allows for a hybrid system with an input to be defined using plaintext
+    <tt>.m</tt>
+    MATLAB function files to specify
+    \(f, g, C,\)
+    and
+    \(D\)
+    .
+   </p>
+   <p>
+    <b>
+     Block Parameters.
+    </b>
+    Simulink block masks were added to the HyEQ blocks to allow users to set block parameters without needing to modify anything inside the block. Parameters are now set in a popup dialog that opens when each block is clicked.
+   </p>
+   <p>
+    <b>
+     Instructions for How To Use Blocks.
+    </b>
+    Each block in the HyEQ Simulink library now includes instructions in the popup dialog that opens when the block is clicked.
+   </p>
+   <p>
+    <b>
+     Signal Sizes.
+    </b>
+    HyEQ Simulink library blocks now determine the signal sizes for inputs and outputs to help identify errors and aid in debugging.
+   </p>
+   <p>
+    <h3>
+     General Improvements
+    </h3>
+   </p>
+   <p>
+    The following updates apply to the entire toolbox:
+   </p>
+   <div>
+    <ul>
+     <li>
+      <b>
+       Easier Installation and Updates
+      </b>
+      . v3.0 is packaged using MATLAB's toolbox packaging, so it can be installed and updated automatically through MATLAB's Add-on manager.
+     </li>
+     <li>
+      <b>
+       Backward Compatibility.
+      </b>
+      All code that works in Toolbox version 2.04 is expected to work in v3.0 without modification. Version 3.0 is comptatible with MATLAB versions back to R2014b.
+     </li>
+     <li>
+      <b>
+       Improved Help Files and Example.
+      </b>
+      All documentation for the HyEQ Toolbox has been redone to make it easier to access and navigate in MATLAB Help.
+     </li>
+    </ul>
+   </div>
+   <h2 id="4">
+    Changes Between Builds
+   </h2>
+   <p>
+    <b>
+     3.0.0.66
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.68
+    </b>
+    (Built September 21, 2022)
+   </p>
+   <div>
+    <ul>
+     <li>
+      Improve HybridSystem assertion functions.
+     </li>
+     <li>
+      Replace 'Double click to...' blocks in Simulink library with blocks that set model callback functions.
+     </li>
+     <li>
+      Minor improvements to documentation.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.56
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.66
+    </b>
+    (Built August 30, 2022)
+   </p>
+   <div>
+    <ul>
+     <li>
+      Fix tests and examples that failed on R2014b, R2015a, R2016a, and R2016b.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.50
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.56
+    </b>
+    (Built August 25, 2022)
+   </p>
+   <div>
+    <ul>
+     <li>
+      RENAMED:
+      <tt>HybridArc.slice</tt>
+      to
+      <tt>HybridArc.select</tt>
+      (
+      <tt>HybridArc.slice</tt>
+      will print a deprecation warning, if used).
+     </li>
+     <li>
+      DEPRECATED:
+      <tt>HybridPlotBuilder.slice</tt>
+      (use
+      <tt>HybridArc.select</tt>
+      instead).
+     </li>
+     <li>
+      Misc. improvements to documentation and warning messages.
+     </li>
+     <li>
+      Fixed: Errors that occured if the active figure was closed while HybridPlotBuilder was currently creating a plot.
+     </li>
+     <li>
+      Fixed: Allow
+      <tt>t</tt>
+      and
+      <tt>j</tt>
+      labels to be disabled in HybridPlotBuilder.
+     </li>
+     <li>
+      Updated HybridPlotBuilder.plotJumps and .plotHybrid to hide decimal-valued tick marks for the
+      <tt>j</tt>
+      axis.
+     </li>
+     <li>
+      Add step to toolbox configuration to open and save the Simulink library file. This prevents warnings that say it was last saved on an old version of Simulink, and mitigates an Simulink defect where the mask dialogs are laid out incorrectly.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.40
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.50
+    </b>
+    (Built July 5, 2022) Simulink Library:
+   </p>
+   <div>
+    <ul>
+     <li>
+      Refactor how parameters are passed to Hybrid System Simulink blocks.
+     </li>
+     <li>
+      Change to using linked blocks for library blocks except for Hybrid Systems with Embedded Functions, Finite State Machines, and Continuous Plants.
+     </li>
+     <li>
+      Use dropdown menu for Flow/Jump priority option in Hybrid System   blocks.
+     </li>
+     <li>
+      Added Integrator System as a block in the Simulink library. All   instances are now linked copies of the library version.
+     </li>
+     <li>
+      Add field datatype hints for fields in mask dialogs.
+     </li>
+     <li>
+      Add signal size data to hybrid system blocks to help with debugging.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.33
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.40
+    </b>
+    (Built March 26, 2022)
+   </p>
+   <div>
+    <ul>
+     <li>
+      Moved documention source files to doc/src.
+     </li>
+     <li>
+      Reoraganized help files and switched from using LaTeX to MATLAB Publish.
+     </li>
+     <li>
+      Added missing documentation for CPS examples.
+     </li>
+     <li>
+      Added tests for examples to check that they run.
+     </li>
+     <li>
+      Fixed links from examples to documentation
+     </li>
+     <li>
+      In Simulink example models, made it so initialization and postprocessing happens automatically.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.22
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.33
+    </b>
+    (Built February 2, 2022)
+   </p>
+   <div>
+    <ul>
+     <li>
+      <b>
+       In
+       <tt>HybridSolution</tt>
+       and
+       <tt>CompositeHybridSolution</tt>
+       : the behavior of
+       <tt>length</tt>
+       and
+       <tt>numel</tt>
+       functions changed
+      </b>
+      . In previous builds, for a
+      <tt>HybridSolution</tt>
+      <tt>sol,</tt>
+      then
+      <tt>length(sol)</tt>
+      gave the number of time-steps in the solution, and for a
+      <tt>CompositeHybridSolution</tt>
+      <tt>comp_sol</tt>
+      , both
+      <tt>length(comp_sol)</tt>
+      and
+      <tt>numel(comp_sol)</tt>
+      gave the number of subsystems. From now on,
+      <tt>length</tt>
+      and
+      <tt>numel</tt>
+      will have the default MATLAB behavior by returning the length and number of elements in arrays. Added
+      <tt>CompositeHybridSolution.subsys_count</tt>
+      and
+      <tt>CompositeHybridSystem.subsys_count</tt>
+      to get the number of subsystems.
+     </li>
+     <li>
+      Improved and reorganized the documentation. All of the documentation is now found in the "doc" folder and can be accessed through MATLAB Help (F1). Added links to PDF files for documents compiled from LaTeX.
+     </li>
+     <li>
+      Fixed tests that were failing on R2014b.
+     </li>
+     <li>
+      Removed development files from deployed toolbox package (reduced installation size by half!)
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.20
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.22
+    </b>
+    (Built November 19, 2021)
+   </p>
+   <div>
+    <ul>
+     <li>
+      <tt>HybridSubsystem</tt>
+      : Added support for defining separate output functions for flows and jumps.
+     </li>
+     <li>
+      Added functions to
+      <tt>HybridSystem</tt>
+      and
+      <tt>HybridSubsystem</tt>
+      to check that the data for a given hybrid (sub)system return values of the correct sizes and to assert that particular points are or are not inside
+      \(C\)
+      or
+      \(D\)
+      . See
+      <tt>checkFunctions</tt>
+      ,
+      <tt>assertInC</tt>
+      ,
+      <tt>assertInD</tt>
+      ,
+      <tt>assertNotInC</tt>
+      , and
+      <tt>assertNotInD.</tt>
+     </li>
+     <li>
+      Changed installation process so that autocomplete is disabled until
+      <tt>configure_toolbox</tt>
+      is run (a prompt is shown in
+      <tt>GettingStarted</tt>
+      ). Previously, users on older versions of MATLAB had to run
+      <tt>configure_toolbox</tt>
+      to disable autocompletions or else see errors in the command line.
+     </li>
+     <li>
+      Added functions for transforming
+      <tt>HybridSolution</tt>
+      objects. See
+      <tt>HybridSolution.transform</tt>
+      ,
+      <tt>HybridSolution.select</tt>
+      ,
+      <tt>HybridSolution.restrictT</tt>
+      , and
+      <tt>HybridSolution.restrictJ.</tt>
+     </li>
+     <li>
+      Reorganized files.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.13
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.20
+    </b>
+    (Built November 4, 2021)
+   </p>
+   <p>
+    Changes to
+    <tt>HybridPlotBuilder:</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      Labels and titles can now be given as cell arrays.
+     </li>
+     <li>
+      Replaced
+      <tt>HybridPlotBuilder.plot()</tt>
+      function with
+      <tt>HybridPlotBuilder().plotPhase()</tt>
+      for plotting the trajectory of state values through state space. (Previously,
+      <tt>plot</tt>
+      automatically selected whether to make
+      <tt>plotFlows</tt>
+      and
+      <tt>plotPhase</tt>
+      style plot based on the dimension of the state space. This is no longer supported.)
+     </li>
+     <li>
+      Added ability to set multiple colors in
+      <tt>HybridPlotBuilder</tt>
+      so that if auto-subplots are off, each component is drawn in a different color. Modified
+      <tt>HybridPlotBuilder.configurePlots()</tt>
+      to take a function handle with two arguments, instead of one. The (new) first argument is the axes to configure and the second is the component index (previously the only argument).
+     </li>
+     <li>
+      Renamed
+      <tt>HybridPlotBuilder.autoSubplots</tt>
+      method to
+      <tt>HybridPlotBuilder.subplots</tt>
+      and changed the default value to
+      <tt>'off'</tt>
+      . For a
+      <tt>HybridSolution</tt>
+      object
+      <tt>sol</tt>
+      , calling
+      <tt>plotFlows(sol)</tt>
+      ,
+      <tt>plotJumps(sol)</tt>
+      , or
+      <tt>plotHybrid(sol)</tt>
+      (without prefixing "|HybridPlotBuilder.")| automatically selects whether automatic subplots are on or off based on the dimension of the system.
+     </li>
+    </ul>
+   </div>
+   <p>
+    Changes to
+    <tt>HybridSolverConfig:</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      Added option to set flow or jump priority in
+      <tt>HybridSolverConfig</tt>
+      as
+      <tt>config.priority('flow') and config.priority('jump'), respectively</tt>
+      .
+     </li>
+     <li>
+      Removed
+      <tt>HybridSolverConfig.flowPriority</tt>
+      and
+      <tt>HybridSolverConfig.jumpPriority</tt>
+      methods. Use
+      <tt>HybridSolverConfig.priority('flow')</tt>
+      and
+      <tt>HybridSolverConfig.priority('jump')</tt>
+      instead
+     </li>
+    </ul>
+   </div>
+   <p>
+    Changes to
+    <tt>HybridSubsystemSolution</tt>
+    (previously
+    <tt>HybridSolutionWithInput</tt>
+    )|:|
+   </p>
+   <div>
+    <ul>
+     <li>
+      Added output values
+      <tt>y</tt>
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    Miscellaneous Changes
+   </p>
+   <div>
+    <ul>
+     <li>
+      Added autocomplete information for
+      <tt>HyEQsolver</tt>
+      ,
+      <tt>Hybridsystem</tt>
+      ,
+      <tt>CompositeHybridSystem</tt>
+      ,
+      <tt>HybridSolution</tt>
+      ,
+      <tt>HybridPlotBuilder</tt>
+      ,
+      <tt>HybridSubsystem, HybridSolverConfig,</tt>
+      and
+      <tt>HybridSystemBuilder.build</tt>
+      (Try it in the MATLAB 2021b code editor!)
+     </li>
+     <li>
+      Extended compatibility back to MATLAB 2014b.
+     </li>
+     <li>
+      Removed
+      <tt>HybridSolution.fromLegacy(t, j, x, f, g, C, D, tspan, jspan)</tt>
+      function. Use
+      <tt>HybridSolution(t, j, x, C, D, tspan, jspan)</tt>
+      instead.
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.11
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.13
+    </b>
+   </p>
+   <p>
+    In
+    <tt>HybridPlotBuilder:</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      It is now possible to chain calls to
+      <tt>HybridPlotBuilder</tt>
+      functions, such as
+      <tt>HybridPlotBuilder().plotflows(sol1).plotflows(sol2)</tt>
+      . This means it is often unnecessary to save the
+      <tt>HybridPlotBuilder</tt>
+      object to a variable.
+     </li>
+     <li>
+      Changed how adding legends works in
+      <tt>HybridPlotBuilder</tt>
+      .
+     </li>
+     <li>
+      Fixed how the label and title are selected when automatic subplots is off.
+     </li>
+     <li>
+      Fix x-axis limits when using subplots. (Previously, the x limits did not updated when subsequent plots were added after the first)
+     </li>
+     <li>
+      Renamed
+      <tt>configureSubplots</tt>
+      in
+      <tt>HybridPlotBuilder</tt>
+      to
+      <tt>configurePlots</tt>
+      . The given function is now called in 2D and 3D phase plots, and when automatic subplots are off, as well as the other plotting functions.
+     </li>
+     <li>
+      Add default configuration to
+      <tt>HybridPlotBuilder</tt>
+      (Still a work in progress!).
+     </li>
+    </ul>
+   </div>
+   <p>
+    In
+    <tt>CompositeHybridSystem</tt>
+    (Previously
+    <tt>CompoundHybridSystem</tt>
+    )
+   </p>
+   <div>
+    <ul>
+     <li>
+      Renamed
+      <tt>CompoundHybridSystem</tt>
+      to
+      <tt>CompositeHybridSystem.</tt>
+     </li>
+     <li>
+      subsystems can now be referenced by ordinal number, object reference, or by name (if given in constructor) when setting inputs and referencing subsystem solutions.
+     </li>
+     <li>
+      The output functions for
+      <tt>HybridSubsystems</tt>
+      can now be a function of
+      <tt>x</tt>
+      ,
+      <tt>u</tt>
+      ,
+      <tt>t</tt>
+      , and/or
+      <tt>j</tt>
+      , instead of only
+      <tt>x</tt>
+      .
+     </li>
+     <li>
+      Input and output functions must be given as anonymous functions and unused arguments should be marked as ignored by replacing the argument name with a tilde (~).
+     </li>
+     <li>
+      Input functions can omit arguments from the end of their argument list any arguments (i.e., unneeded output values from other subsystems).
+     </li>
+     <li>
+      The way the dimensions and output of
+      <tt>HybridSubsystem</tt>
+      subclasses are set has changed.
+     </li>
+    </ul>
+   </div>
+   <p>
+    Miscellaneous changes
+   </p>
+   <div>
+    <ul>
+     <li>
+      Automated toolbox tests can be run by calling
+      <tt>hybrid.tests.run()</tt>
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    <b>
+     3.0.0.6
+    </b>
+    \(\to\)
+    <b>
+     3.0.0.11
+    </b>
+   </p>
+   <p>
+    Name changes (see the
+    <tt>rename_variables.sh</tt>
+    script for automatic renaming for all occurances)
+   </p>
+   <div>
+    <ul>
+     <li>
+      Renamed all method names to use camelCase naming. That is, we renamed
+      <tt>flow_map</tt>
+      to
+      <tt>flowMap, jump_map</tt>
+      to
+      <tt>jumpMap</tt>
+      ,
+      <tt>plotflows</tt>
+      to
+      <tt>plotFlows</tt>
+      etc. (Functions from v2.04 are left unchanged for backward compatibility)
+     </li>
+     <li>
+      <tt>ControlledHybridSystem</tt>
+      to
+      <tt>HybridSubsystem</tt>
+     </li>
+     <li>
+      <tt>ControlledHybridSolution</tt>
+      to
+      <tt>HybridSolutionWithInput</tt>
+     </li>
+     <li>
+      <tt>control_dimension</tt>
+      to
+      <tt>input_dimension</tt>
+      in
+      <tt>HybridSubsystem</tt>
+     </li>
+     <li>
+      <tt>plotHybridArc</tt>
+      to
+      <tt>plotHybrid</tt>
+      in
+      <tt>HybridPlotBuilder</tt>
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    Changes in
+    <tt>HybridSystem</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      A
+      <tt>HybridSystem</tt>
+      object can now be created from function handles
+      <tt>@f, @g, @C, @D</tt>
+      simply by calling
+      <tt>sys = HybridSystem(@f, @g, @C, @D).</tt>
+     </li>
+     <li>
+      Add checks if the
+      <tt>"this"</tt>
+      argument is missing from
+      <tt>flowMap(this, x, t, j), jumpMap(this, x, t, j),</tt>
+      etc.
+     </li>
+     <li>
+      In
+      <tt>solve(), a|dd default values |tspan=[0, 10]</tt>
+      and
+      <tt>jspan=[0, 10].</tt>
+     </li>
+    </ul>
+   </div>
+   <p>
+    Changes in
+    <tt>HyEQsolver</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      Rewrote solver algorithm
+     </li>
+     <li>
+      Fixed all known bugs!
+     </li>
+     <li>
+      Fix: close progress bar regardless of how
+      <tt>HyEQsolver</tt>
+      exits.
+     </li>
+    </ul>
+   </div>
+   <p>
+    Changes in
+    <tt>CompoundHybridSystem</tt>
+    and
+    <tt>HybridSubsystem</tt>
+    (previously
+    <tt>ControlledHybridSystem)</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      Add output function to
+      <tt>HybridSubsystem</tt>
+      class.
+     </li>
+     <li>
+      Rewrote
+      <tt>CompoundHybridSystem</tt>
+      to support an arbitrary number of subsystems.
+     </li>
+     <li>
+      Add
+      <tt>PairHybridSystem</tt>
+      to support faster computations and cleaner code for systems with only two subsystems.
+     </li>
+     <li>
+      Renamed
+      <tt>HybridSubsystem</tt>
+      property from "|control_dimension|" to "|input_dimension|"
+     </li>
+    </ul>
+   </div>
+   <p>
+    Changes in
+    <tt>HybridPlotBuilder</tt>
+   </p>
+   <div>
+    <ul>
+     <li>
+      Fix: legends now correctly placed in subplots.
+     </li>
+     <li>
+      Add padding to top and bottom of plots made with
+      <tt>plotFlows</tt>
+      , and
+      <tt>plotJumps.</tt>
+     </li>
+     <li>
+      Add
+      <tt>configureSubplots</tt>
+      function to allow the full range of plot customization offered by MATLAB.
+     </li>
+     <li>
+      Add
+      <tt>autoSubplots</tt>
+      function to set whether subplots are automatically created for each state component.
+     </li>
+     <li>
+      Fixed linking between 3D subplots generated by
+      <tt>plotHybrid</tt>
+      so they rotate and pan together.
+     </li>
+     <li>
+      Improved plotting speed by up to ~200x.
+     </li>
+     <li>
+      Add
+      <tt>addLegendEntry</tt>
+      function to include plots in the legend that were not created by
+      <tt>HybridPlotBuilder</tt>
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    Miscellaneous changes
+   </p>
+   <div>
+    <ul>
+     <li>
+      Add ability to set ode solver options such as "AbsTol" and "MaxStep" via arguments to the
+      <tt>HybridSolverConfig</tt>
+      constructor, as well as "silent" to disable progress bar.
+     </li>
+     <li>
+      In
+      <tt>HybridSolution,</tt>
+      removed the values of f, g, C, and D along solutions. Instead, they can be computed as need using
+      <tt>HybridSystem.generateFGCD()</tt>
+      . To compute the values of an arbitrary vector-valued function along a solution, use
+      <tt>HybridSolution.evaluateFunction()</tt>
+      .
+     </li>
+     <li>
+      Move several functions from
+      <tt>HybridUtils</tt>
+      the
+      <tt>hybrid.internal</tt>
+      package.
+     </li>
+     <li>
+      Make
+      <tt>hybrid.interal.jumpTimes</tt>
+      returns the values of
+      \(j\)
+      and indices immediately before a jump, instead of immediately after.
+     </li>
+     <li>
+      Expanded documentation and unit tests.
+     </li>
+    </ul>
+   </div>
+  </div>
+ </body>
+</html>{% endraw %}

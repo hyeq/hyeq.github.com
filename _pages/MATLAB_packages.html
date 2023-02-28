@@ -1,0 +1,158 @@
+---
+layout: single
+title: |
+    Package Namespaces in the HyEQ Toolbox
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In MATLAB,
+    <i>
+     package namespaces
+    </i>
+    (or simply
+    <i>
+     packages
+    </i>
+    ) are used to distinguish between functions, scripts, and classes that otherwise have the same name. We use packages in the HyEQ Toolbox to avoid cluttering the MATLAB base namespace and organize components into logical groups.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       Description of HyEQ Package Organization
+      </a>
+     </li>
+     <li>
+      <a href="#2">
+       Finding and Using Components in Packages
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    Description of HyEQ Package Organization
+   </h2>
+   <p>
+    The most commonly used classes in the MATLAB library, such as
+    <tt>HybridSystem</tt>
+    ,
+    <tt>HybridSolverConfig</tt>
+    , etc., are not in any package. These classes and functions can be found in the
+    <a href="matlab:cd(hybrid.getFolderLocation('matlab'))">
+     <tt>matlab/</tt>
+    </a>
+    directory.
+   </p>
+   <p>
+    The rest of the HyEQ Toolbox components are organized into the following package hierarchy.
+   </p>
+   <div>
+    <ul>
+     <li>
+      <b>
+       <a href="matlab:doc('hybrid')">
+        <tt>hybrid</tt>
+       </a>
+      </b>
+      Contains classes and functions that the average HyEQ Toolbox user will not often need, but may be occasionally be useful.
+     </li>
+     <li>
+      <b>
+       <a href="matlab:doc('hybrid.examples')">
+        <tt>hybrid.examples</tt>
+       </a>
+      </b>
+      Contains examples of how to use both the MATLAB- and Simulink-based libraries.
+     </li>
+     <li>
+      <b>
+       <a href="matlab:doc('hybrid.subsystems')">
+        <tt>hybrid.subsystems</tt>
+       </a>
+      </b>
+      Contains subclasses of
+      <tt>HybridSubsystem</tt>
+      that are useful for creating
+      <tt>CompositeHybridSystems</tt>
+      .
+     </li>
+     <li>
+      <b>
+       <tt>hybrid.tests</tt>
+      </b>
+      Contains automated tests that verify the correctness of the HyEQ Toolbox's code. Primarily used during developement, but can be run after installing the toolbox by running
+      <a href="matlab:hybrid.configureToolbox">
+       <tt>hybrid.configureToolbox</tt>
+      </a>
+      .
+     </li>
+     <li>
+      <b>
+       <tt>hybrid.internal</tt>
+      </b>
+      Reserved for internal use by the Toolbox. You should not need to access these components directly.
+     </li>
+    </ul>
+   </div>
+   <h2 id="2">
+    Finding and Using Components in Packages
+   </h2>
+   <p>
+    The components in a package named
+    <tt>mypackage.mysubpackage</tt>
+    can be viewed by running
+   </p>
+   <pre class="language-matlab">help mypackage.mysubpackage
+</pre>
+   <p>
+    In the file system, package contents are located in a
+    <i>
+     package directory
+    </i>
+    indicated by a "+" prefix. Thus, the files in
+    <tt>mypackage</tt>
+    package would be located in a directory named
+    <tt>+mypackage</tt>
+    and within that would be a folder named
+    <tt>+mysubpackage</tt>
+    . In the HyEQ Toolbox, most of the package directory are located in the
+    <a href="matlab:cd(hybrid.getFolderLocation('matlab'))">
+     <tt>matlab/</tt>
+    </a>
+    directory except for
+    <tt>hybrid.examples</tt>
+    , which is located in
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples'))">
+     <tt>Examples/</tt>
+    </a>
+   </p>
+   <p>
+    Referencing a function or class from within a package requires the full package path. For example, to use
+    <tt>ZeroOrderHold</tt>
+    , it must be referenced as
+    <tt>hybrid.subsystems.ZeroOrderHold</tt>
+    . The package path can be omitted if the package is first imported by calling
+   </p>
+   <pre class="language-matlab">import hybrid.subsystems.*
+</pre>
+   <p>
+    For clarity, however, we use the explicit package path for classes throughout the HyEQ Toolbox documentation.
+   </p>
+   <p>
+    For more information on MATLAB package namespaces, see the
+    <a href="https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html">
+     online documentation
+    </a>
+    .
+   </p>
+  </div>
+ </body>
+</html>{% endraw %}

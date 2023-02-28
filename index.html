@@ -1,0 +1,237 @@
+---
+layout: single
+title: |
+    Hybrid Equations Toolbox Help
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    The Hybrid Equation (HyEQ) Toolbox provides methods in MATLAB and Simulink for computing and plotting numerical solutions to hybrid dynamical systems.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       Where to Start
+      </a>
+     </li>
+     <li>
+      <a href="#2">
+       Getting Help
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Table of Contents for HyEQ Toolbox Help
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    Where to Start
+   </h2>
+   <p>
+    Depending on your prior experience one of the following pages would be a good place to start learning how to use the HyEQ Toolbox.
+   </p>
+   <div>
+    <ul>
+     <li>
+      If you are unfamiliar with hybrid systems, read
+      <a href="/intro_to_hybrid_systems">Introduction to Hybrid Systems</a>
+      for a brief introduction to the mathematical modeling of hybrid systems.
+     </li>
+     <li>
+      For users of HyEQ Toolbox version 2.40 (and earlier versions), see
+      <a href="/ConvertingLegacyCodeToVersion3_demo">the guide to quickly converting old code to use new features</a>
+      .
+     </li>
+     <li>
+      All others should start with the documentation for the
+      <a href="/TOC_matlab">HyEQ MATLAB library</a>
+      or the
+      <a href="/TOC_simulink">HyEQ Simulink library</a>
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    A full list of HyEQ Toolbox help pages is given below.
+   </p>
+   <h2 id="2">
+    Getting Help
+   </h2>
+   <p>
+    To learn more about a particular component of the toolbox, execute
+    <tt>help [name]</tt>
+    or
+    <tt>doc [name]</tt>
+    in the MATLAB command window, where
+    <tt>[name]</tt>
+    is the name of a class, function, or package (
+    <tt>help</tt>
+    prints a short description and
+    <tt>doc</tt>
+    opens the documentation page). For example, to learn about
+    <tt>HybridSystem</tt>
+    , run
+   </p>
+   <pre class="language-matlab">help HybridSystem
+</pre>
+   <p>
+    or
+   </p>
+   <pre class="language-matlab">doc HybridSystem
+</pre>
+   <p>
+    To report a problem, request a feature, or ask for help,
+    <a href="https://github.com/pnanez/HyEQ_Toolbox/issues/new">
+     submit an issue
+    </a>
+    on our GitHub repository.
+   </p>
+   <h2 id="3">
+    Table of Contents for HyEQ Toolbox Help
+   </h2>
+   <p>
+    A list of help topics is given below.
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="/intro_to_hybrid_systems">Introduction to Hybrid Systems</a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    <h3>
+     The Hybrid Equations MATLAB Library
+    </h3>
+   </p>
+   <p>
+    The following pages contain introductory guides for how to use the MATLAB-based portion of the Hybrid Equations Toolbox.
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="/HybridSystem_demo">Creating and Simulating Hybrid Systems</a>
+     </li>
+     <li>
+      <a href="/HybridPlotBuilder_demo">Plotting Hybrid Arcs</a>
+     </li>
+     <li>
+      <a href="/CompositeHybridSystem_demo">Creating and Simulating Composite Hybrid Subsystems</a>
+     </li>
+     <li>
+      <a href="/ConvertingLegacyCodeToVersion3_demo">Updating Code Designed for HyEQ Toolbox v2.04 to Use v3.0 Features.</a>
+     </li>
+     <li>
+      <a href="/MATLAB_ZOH_example_demo">Example: Composite Hybrid System with Zero-order Hold Subsystem.</a>
+     </li>
+     <li>
+      <a href="/MATLAB_switched_system_example_demo">Example: Composite Hybrid System with Switched Subsystem.</a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    <h3>
+     The Hybrid Equations Simulink Library
+    </h3>
+   </p>
+   <p>
+    The following pages describe how to use the Simulink-based portion of the Hybrid Equations Toolbox.
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="/Help_SimulinkLibrary">Introduction to HyEQ Simulink library.</a>
+     </li>
+     <li>
+      <a href="/Help_bouncing_ball">Example: Hybrid System with External Functions (Bouncing Ball)</a>
+     </li>
+     <li>
+      <a href="/Help_bouncing_ball_with_input">Example: Hybrid System with Embedded Functions (Bouncing Ball with Input)</a>
+     </li>
+     <li>
+      <a href="/Help_coupled_subsystems">Example: Composing Multiple Hybrid Subsystems (Bouncing Ball on Moving Platform)</a>
+     </li>
+     <li>
+      <a href="/Help_behavior_in_C_intersection_D">None</a>
+     </li>
+     <li>
+      <a href="/help_integrator_system">The Integrator System</a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    <h4>
+     Cyber-physical System (CPS) Components
+    </h4>
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="/CPS_Components">Introduction to Cyber-physical Component Blocks</a>
+     </li>
+     <li>
+      <a href="/CPS_continuous_plant">Continuous-time Plant</a>
+     </li>
+     <li>
+      <a href="/CPS_zero_order_hold">Zero-Order Hold (ZOH)</a>
+     </li>
+     <li>
+      <a href="/CPS_analog_to_digital_converter">Analog-to-Digital Converter (ADC)</a>
+     </li>
+     <li>
+      <a href="/CPS_finite_state_machine">Finite State Machine (FSM)</a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    <h3>
+     Applications of Hybrid Systems
+    </h3>
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="/Example_vehicle_on_path">Example 1:       A Vehicle Following a Path</a>
+     </li>
+     <li>
+      <a href="/Example_fireflies">Example 2:       Synchronization of Two Fireflies</a>
+     </li>
+     <li>
+      <a href="/Example_zoh_feedback_control">Example 3:       Sample-and-hold Feedback Control</a>
+     </li>
+     <li>
+      <a href="/Example_network_estimation">Example 4:       Estimation over a Network</a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    <h3>
+     Other
+    </h3>
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="/MATLAB_packages">Package Namespaces in the HyEQ Toolbox</a>
+     </li>
+     <li>
+      <a href="/changelog">Change Log</a>
+     </li>
+     <li>
+      <a href="/acknowledgements">Credits and Acknowledgements</a>
+     </li>
+    </ul>
+   </div>
+  </div>
+ </body>
+</html>{% endraw %}

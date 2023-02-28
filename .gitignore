@@ -1,12 +1,11 @@
-*.html
 .idea/
 *_eq*.png
 vendor
+pages-tmp/
 
 # Vim
 *~
 *.sw[p_]
-
 
 # Ruby Gem
 *.gem

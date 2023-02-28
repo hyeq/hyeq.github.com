@@ -1,0 +1,369 @@
+---
+layout: single
+title: |
+    CPS Component: Analog-to-Digital Converter (ADC)
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In this example, an analog-to-digital converter (ADC) is modeled in Simulink as a hybrid system with an input, where the input is sampled periodically by the ADC.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Steps to Run Model
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#6">
+       Example Output
+      </a>
+     </li>
+     <li>
+      <a href="#7">
+       ADC Connected to Bouncing Ball
+      </a>
+     </li>
+     <li>
+      <a href="#8">
+       Simulink Model for ADC Connected to Bouncing Ball
+      </a>
+     </li>
+     <li>
+      <a href="#9">
+       Example Output
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the package
+    <tt>hybrid.examples.analog_to_digital_converter</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="matlab:open('hybrid.examples.analog_to_digital_converter.initialize')">
+       initialize.m
+      </a>
+     </li>
+     <li>
+      <a href="matlab:hybrid.examples.analog_to_digital_converter.adc">
+       adc.slx
+      </a>
+     </li>
+     <li>
+      <a href="matlab:open('hybrid.examples.analog_to_digital_converter.postprocess')">
+       postprocess.m
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    and in the package
+    <tt>hybrid.examples.bouncing_ball_with_adc</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="matlab:open('hybrid.examples.bouncing_ball_with_adc.initialize')">
+       initialize.m
+      </a>
+     </li>
+     <li>
+      <a href="matlab:hybrid.examples.bouncing_ball_with_adc.ball_with_adc">
+       ball_with_adc.slx
+      </a>
+     </li>
+     <li>
+      <a href="matlab:open('hybrid.examples.bouncing_ball_with_adc.postprocess')">
+       postprocess.m
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of these packages are located in
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples','+hybrid','+examples','+bouncing_ball_with_adc'))">
+     <tt>Examples\+hybrid\+examples\bouncing_ball_with_adc</tt>
+    </a>
+    and
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples','+hybrid','+examples','+analog_to_digital_converter'))">
+     <tt>Examples\+hybrid\+examples\analog_to_digital_converter</tt>
+    </a>
+    (clicking these links changes your working directory).
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    The ADC is modeled as a hybrid system with the following data:
+   </p>
+   <p>
+    <img alt="$$\begin{array}{ll}
+f(x,u):=\left[\begin{array}{c}
+ 0 \\
+ 1
+ \end{array}\right],
+   & C := \{ (x,u) \in \mathbf{R}^2 \times \mathbf{R} \mid (x_2 \geq 0)
+   \wedge (x_2 \leq T_s) \} \\ \\
+g(x,u):=\left[ \begin{array}{c}
+                   u \\ 0
+               \end{array}\right],
+   & D: = \{(x,u) \in \mathbf{R}^2 \times \mathbf{R} \mid x_2 > T_s \}
+\end{array}$$" src="/images/CPS_analog_to_digital_converter_eq05430726084330322988.png" style="width:417px;height:89px;"/>
+   </p>
+   <p>
+    where
+    \(u\)
+    is the input to the ADC,
+    \(x_1\)
+    is a memory state used to store the samples of
+    \(u\)
+    ,
+    \(x_2\)
+    is a timer that causes the ADC to sample
+    \(u\)
+    every
+    \(T_s\)
+    seconds, and
+    \(T_s > 0\)
+    denotes the time between samples of
+    \(u\)
+    .
+   </p>
+   <h2 id="3">
+    Steps to Run Model
+   </h2>
+   <p>
+    The following procedure is used to simulate this example:
+   </p>
+   <div>
+    <ul>
+     <li>
+      Open
+      <a href="matlab:hybrid.examples.analog_to_digital_converter.adc">
+       <tt>hybrid.examples.analog_to_digital_converter.adc.slx</tt>
+      </a>
+      .
+     </li>
+     <li>
+      Double-click the block labeled
+      <i>
+       Double Click to Initialize
+      </i>
+      .
+     </li>
+     <li>
+      To start the simulation, click the
+      <i>
+       run
+      </i>
+      button or select
+      <tt>Simulation>Run</tt>
+      .
+     </li>
+     <li>
+      Once the simulation finishes, click the block labeled
+      <i>
+       Double Click to Plot Solutions
+      </i>
+      . Several plots of the computed solution will open.
+     </li>
+    </ul>
+   </div>
+   <h2 id="4">
+    Simulink Model
+   </h2>
+   <p>
+    The following diagram shows the Simulink model of the bouncing ball. The contents of the blocks
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    ,
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    , etc., are shown below. When the Simulink model is open, the blocks can be viewed and modified by double clicking on them.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_analog_to_digital_converter_01.png" vspace="5"/>
+   <p>
+    The following Matlab embedded functions that describe the sets
+    \(C\)
+    and
+    \(D\)
+    and the functions
+    \(f\)
+    and
+    \(g\)
+    for the ADC system.
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xdot = f(x, u)
+    % Flow map for analog to digial converter.
+    msdot = 0*u;       % measured continuous dynamics
+    tau_dot = 1;       % Timer tau_s
+    xdot = [msdot; tau_dot];
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C(x, u, sample_time) 
+    % Flow set indicator function for analog to digial converter.
+    tau = x(end); % timer state
+    if tau >= 0 && tau <= sample_time
+        inC = 1;      % report flow
+    elseif tau> sample_time
+        inC = 0;      % do not report flow
+    else
+        inC = 0;
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xplus = g(x, u)
+    % Jump map for for analog to digial converter.
+    msplus = u;        % output = measured input
+    tau_plus = 0;     % Timer tau_s
+    xplus = [msplus; tau_plus];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D(x, u, sample_time) 
+    % Jump set indicator function for analog to digial converter.
+    tau = x(end); % timer state
+    if tau >= 0 && tau <= sample_time
+        inD = 0;          % do not report jump
+    elseif tau > sample_time
+        inD = 1;          % report jump
+    else
+        inD = 0;
+    end
+end
+
+</pre>
+   <h2 id="6">
+    Example Output
+   </h2>
+   <p>
+    Let the input function be
+    \(u(t,j) = \sin(t)\)
+    and let
+    \(T_s = \pi/8\)
+    . The solution to the ADC system from
+    \(x(0,0)=[0,0]^\top\)
+    and with
+    <tt>T=10</tt>
+    ,
+    <tt>J=20, |rule=1</tt>
+    shows that the ADC samples the sinusoidal input every
+    \(\pi/8\)
+    seconds.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_analog_to_digital_converter_02.png" vspace="5"/>
+   <h2 id="7">
+    ADC Connected to Bouncing Ball
+   </h2>
+   <p>
+    In this section, the interconnection of a bouncing ball system and an ADC is modeled in Simulink. This shows how an ADC block can be used to discretize a hybrid system.
+   </p>
+   <p>
+    The model of the ADC is the same as above and the model of the bouncing ball subsystem is described in
+    <a href="/Example_1_3">Modeling a Hybrid System with Embedded Function Blocks (Bouncing Ball with   Input)</a>
+    .
+   </p>
+   <h2 id="8">
+    Simulink Model for ADC Connected to Bouncing Ball
+   </h2>
+   <p>
+    The following diagram shows the Simulink model with an ADC subsystem connected to the output of a bouncing ball subsystem. (The ball subsystem is given
+    <a href="/Example_1_3">here</a>
+    .)
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_analog_to_digital_converter_03.png" vspace="5"/>
+   <h2 id="9">
+    Example Output
+   </h2>
+   <p>
+    Let the input function to the bouncing ball be
+    \(u(t,j) = 0.2\)
+    and let
+    \(\gamma = -9.81\)
+    ,
+    \(\lambda = 0.8\)
+    , and
+    \(T_s = 0.1\)
+    . The solution to the interconnection from an initial condition of
+    \(x(0,0)=[0,0]^\top\)
+    for the bouncing ball and
+    \(x(0,0)=[0,0]^\top\)
+    for the ADC, and with
+    <tt>T=10, J=20, rule=1</tt>
+    , shows that the ADC samples the ball position and velocity every
+    \(0.1\)
+    seconds.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_analog_to_digital_converter_04.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

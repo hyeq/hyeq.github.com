@@ -1,0 +1,309 @@
+---
+layout: single
+title: |
+    The Integrator System
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In this page we discuss the internals of the
+    <i>
+     Integrator System
+    </i>
+    :
+   </p>
+   <p>
+    <img src="/images/images/Integrator.png" style="width: 100%; max-height: 350px; object-fit: contain"/>
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       Continuous Time (CT) Dynamics
+      </a>
+     </li>
+     <li>
+      <a href="#2">
+       Jump Logic
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Update Logic
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Stop Logic
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    Continuous Time (CT) Dynamics
+   </h2>
+   <p>
+    The block containing the Continuous Time (CT) Dynamics is shown here:
+   </p>
+   <p>
+    <img alt="" hspace="5" src="/images/images/CTdynamics.png" vspace="5"/>
+   </p>
+   <p>
+    It defines the CT dynamics by assembling the time derivative of the state
+    \([t\ j\ x^\top]^\top\)
+    . States
+    \(t\)
+    and
+    \(j\)
+    are considered states of the system because they need to be updated throughout the simulation in order to keep track of the time and number of jumps. Without
+    \(t\)
+    and
+    \(j\)
+    , solutions could not be plotted accurately. This is given by
+   </p>
+   <p>
+    <img alt="$$
+\left[\begin{array}{c}
+\dot{t} \\ \dot{j} \\ \dot{x}
+\end{array}\right]
+=
+\left[\begin{array}{c}
+1 \\
+0 \\
+f(x, u)
+\end{array}\right].
+$$" src="/images/Help_integrator_system_eq08375331557313862410.png" style="width:141px;height:54px;"/>
+   </p>
+   <p>
+    Note that input port
+    \(1\)
+    takes the value of
+    \(f(x,u)\)
+    through the output of the
+    <i>
+     Embedded MATLAB function block f
+    </i>
+    .
+   </p>
+   <h2 id="2">
+    Jump Logic
+   </h2>
+   <p>
+    The inputs to the jump logic block, shown below, are the output of the blocks
+    <i>
+     C
+    </i>
+    and
+    <i>
+     D
+    </i>
+    indicating whether the state is in those sets or not, and a random signal with uniform distribution in
+    \([0,1]\)
+    .
+   </p>
+   <p>
+    <img src="/images/images/JumpLogic.png" style="width: 100%; max-height: 250px; object-fit: contain"/>
+   </p>
+   <p>
+    The variable
+    <i>
+     rule
+    </i>
+    defines whether the simulator gives priority to jumps, priority to flows, or no priority. It is initialized in
+    <tt>initialize.m</tt>
+    .
+   </p>
+   <p>
+    The output of the Jump Logic is equal to
+    <tt>1</tt>
+    , triggering a jump, when:
+   </p>
+   <div>
+    <ul>
+     <li>
+      the output of the
+      <i>
+       D block
+      </i>
+      is equal to one and
+      <tt>rule=1</tt>
+      ,
+     </li>
+     <li>
+      the output of the
+      <i>
+       C block
+      </i>
+      is equal to zero,       the output of the
+      <i>
+       D block
+      </i>
+      is equal to one, and
+      <tt>rule=2</tt>
+      ,
+     </li>
+     <li>
+      the output of the
+      <i>
+       C block
+      </i>
+      is equal to zero,       the output of the
+      <i>
+       D block
+      </i>
+      is equal to one, and
+      <tt>rule=3</tt>
+      ,
+     </li>
+     <li>
+      or the output of the
+      <i>
+       C block
+      </i>
+      is equal to one,       the output of the
+      <i>
+       D block
+      </i>
+      is equal to one,
+      <tt>rule = 3</tt>
+      ,       and the random signal
+      \(r\)
+      is larger or equal than
+      \(0.5\)
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    Under these events, the output of this block, which is connected to the integrator external reset input, triggers a reset of the integrator, that is, a jump of
+    \(\mathcal{H}\)
+    . The reset or jump is activated since the configuration of the reset input is set to "level hold", which executes resets when this external input is equal to one (if the next input remains set to one, multiple resets would be triggered). Otherwise, the output is equal to zero.
+   </p>
+   <h2 id="3">
+    Update Logic
+   </h2>
+   <p>
+    The
+    <i>
+     Update Logic
+    </i>
+    block is shown here:
+   </p>
+   <p>
+    <img src="/images/images/UpdateLogic.png" style="width: 100%; max-height: 200px; object-fit: contain"/>
+   </p>
+   <p>
+    The update logic uses the
+    <i>
+     state port
+    </i>
+    information of the integrator. This port reports the value of the state of the integrator,
+    \([t\ j\ x^\top]^\top\)
+    , at the exact instant that the reset condition becomes true. Notice that
+    \(x^-\)
+    differs from
+    \(x\)
+    since at a jump,
+    \(x^-\)
+    indicates the value of the state that triggers the jump, but it is never assigned as the output of the integrator. In other words,
+    \(x \in D\)
+    is checked using
+    \(x^-\)
+    and if true,
+    \(x\)
+    is reset to
+    \(g(x^-,u)\)
+    . Notice, however, that
+    \(u\)
+    is the same because at a jump,
+    \(u\)
+    indicates the next evaluated value of the input, and it is assigned as the output of the integrator. The flow time
+    \(t\)
+    is kept constant at jumps and
+    \(j\)
+    is incremented by one. More precisely,
+   </p>
+   <p>
+    <img alt="$$
+\left[\begin{array}{c}
+  t^+ \\ j^+ \\ x^+
+\end{array}\right]
+=
+\left[\begin{array}{c}
+  t^- \\
+  j^{-}+1 \\
+  g(x^-,u)
+\end{array}\right]
+$$" src="/images/Help_integrator_system_eq17461772488131309911.png" style="width:147px;height:54px;"/>
+   </p>
+   <p>
+    where
+    \([t^-\ j^-\ {x^-}^\top]^\top\)
+    is the state that triggers the jump.
+   </p>
+   <h2 id="4">
+    Stop Logic
+   </h2>
+   <p>
+    The
+    <i>
+     Stop Logic
+    </i>
+    block is shown here:
+   </p>
+   <p>
+    <img src="/images/images/StopLogic.png" style="width: 100%; max-height: 250px; object-fit: contain"/>
+   </p>
+   <p>
+    It stops the simulation under any of the following events:
+   </p>
+   <div>
+    <ul>
+     <li>
+      The flow time is larger than or equal to the maximum flow time specified by
+      \(T\)
+      .
+     </li>
+     <li>
+      The jump time is larger than or equal to the maximum number of jumps specified by
+      \(J\)
+      .
+     </li>
+     <li>
+      The state of the hybrid system
+      \(x\)
+      is neither in
+      \(C\)
+      nor in
+      \(D\)
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    Under any of these events, the output of the logic operator connected to the
+    <i>
+     Stop block
+    </i>
+    becomes one, stopping the simulation. Note that the inputs
+    \(C\)
+    and
+    \(D\)
+    are routed from the output of the blocks computing whether the state is in
+    \(C\)
+    or
+    \(D\)
+    and use the value of
+    \(x^-\)
+    .
+   </p>
+  </div>
+ </body>
+</html>{% endraw %}

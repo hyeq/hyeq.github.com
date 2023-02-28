@@ -1,0 +1,12 @@
+---
+layout: default
+title: Snippets
+---
+
+<h1 class="mt-4">Snippets</h1>
+{% assign snippets = site.snippets%}
+{% for snip in snippets %}
+<div class="snipitem">
+  <div class="sniptitle">{{ snip.title }}</div>
+</div>
+{% endfor %}

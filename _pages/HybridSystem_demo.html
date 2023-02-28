@@ -1,0 +1,1165 @@
+---
+layout: single
+title: |
+    Creating and Simulating Hybrid Systems
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In this tutorial, we show how to create and solve a hybrid system using the
+    <tt>HybridSystem</tt>
+    class. For a brief introduction to hybrid systems, see
+    <a href="/intro_to_hybrid_systems">here</a>
+    .
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       How to create a HybridSystem Subclass
+      </a>
+     </li>
+     <li>
+      <a href="#5">
+       Asserting Conditions on Hybrid Systems
+      </a>
+     </li>
+     <li>
+      <a href="#7">
+       Compute Solutions
+      </a>
+     </li>
+     <li>
+      <a href="#9">
+       Information About Solutions
+      </a>
+     </li>
+     <li>
+      <a href="#11">
+       Modifying Hybrid Arcs
+      </a>
+     </li>
+     <li>
+      <a href="#15">
+       Solver Configuration Options
+      </a>
+     </li>
+     <li>
+      <a href="#24">
+       Concise Hybrid System Definitions
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    How to create a HybridSystem Subclass
+   </h2>
+   <p>
+    In this page, we will consider, as an example, a bouncing ball with state
+    \(x = (x_1, x_2),\)
+    where
+    \(h := x_1\)
+    is the height of the ball and
+    \(v := x_2\)
+    is the vertical velocity. The ball can be modeled as the following hybrid system:
+   </p>
+   <p>
+    <img alt="$$
+\left\{\begin{array}{ll}
+    \left[\begin{array}{c} \dot x_1 \\ \dot x_2 \end{array}\right]
+                   = \left[\begin{array}{c} x_2 \\ -\gamma \end{array}\right]
+           & x \in C := \{ (x_1, x_2) \in R^2 \mid x_1 \geq 0 \textrm{ or } x_2 \geq 0 \}
+      \\ \\
+    \left[\begin{array}{c} x_1^+ \\ x_2^+ \end{array}\right]
+                   = \left[\begin{array}{c} x_1 \\ -\lambda x_2 \end{array}\right]
+           &x \in D := \{ (x_1, x_2) \in R^2 \mid x_1 \leq 0,\: x_2 \leq 0 \}
+\end{array} \right.
+$$" src="/images/HybridSystem_demo_eq01955370174982338042.png" style="width:438px;height:89px;"/>
+   </p>
+   <p>
+    where
+    \(\gamma > 0\)
+    is the acceleration due to gravity and
+    \(\lambda \geq 0\)
+    is the coefficient of restitution when the ball hits the ground.
+   </p>
+   <p>
+    We define a MATLAB implementation of the bouncing ball in
+    <tt><a href="matlab:open('hybrid.examples.BouncingBall')">hybrid.examples.BouncingBall.m</a></tt>
+    . A script for running the bouncing ball example is provided at
+    <a href="matlab:open('hybrid.examples.run_bouncing_ball')">
+     <tt>hybrid.examples.run_bouncing_ball</tt>
+    </a>
+    (the prefix
+    <tt>hybrid.examples.</tt>
+    indicates the
+    <a href="/MATLAB_packages">package namespace</a>
+    that contains
+    <tt>BouncingBall.m</tt>
+    and
+    <tt>run_bouncing_ball.m</tt>
+    ). The structure of
+    <tt>BouncingBall.m</tt>
+    is as follows.
+   </p>
+   <pre class="language-matlab">classdef BouncingBall < HybridSystem
+    % Define bouncing ball system as a subclass of HybridSystem.
+    properties
+        % Define variable class properties.
+        ...
+    end
+    properties(SetAccess = immutable)
+        % Define constant (i.e., "immutable") class properties.
+        ...
+    end
+    methods
+        % Define functions, including definitions of f, g, C, and D.
+        ...
+    end
+end
+</pre>
+   <p>
+    In the first line,
+    <tt>"classdef BouncingBall  < HybridSystem"</tt>
+    specifies that
+    <tt>BouncingBall</tt>
+    is a subclass of the
+    <tt>HybridSystem</tt>
+    class, which means it inherits the attributes of that class. Within MATLAB classes,
+    <tt>properties</tt>
+    blocks define variables and constants that can be accessed on instances of the class. For
+    <tt>BouncingBall</tt>
+    , there are two
+    <tt>properties</tt>
+    blocks. The first defines variable variables for the system parameters
+    \(\gamma\)
+    and
+    \(\lambda\)
+    .
+   </p>
+   <pre class="language-matlab">classdef BouncingBall < HybridSystem
+    properties
+        gamma = 9.8; % Acceleration due to gravity.
+        lambda = 0.9; % Coefficient of bounce restitution.
+    end
+    ...
+end
+</pre>
+   <p>
+    The second properties block defines constants that cannot be modified. The block attribute
+    <tt>SetAccess = immutable</tt>
+    means that the values cannot be changed once an object is constructed. We define two "index" constants that are useful for referencing components of the state vector
+    <tt>x</tt>
+    .
+   </p>
+   <pre class="language-matlab">classdef BouncingBall < HybridSystem
+    ...
+    properties(SetAccess = immutable)
+        % The index of 'height' component within the state vector 'x'.
+        height_index = 1;
+        % The index of 'velocity' component within the state vector 'x'.
+        velocity_index = 2;
+    end
+    ...
+end
+</pre>
+   <p>
+    For more complicated systems, it is sometimes useful to define constants for a range of indices. For example, if
+    \(u, v \in \mathbb{R}^{4}\)
+    and
+   </p>
+   <p>
+    <img alt="$$x = \left[\begin{array}{c} u, v \end{array}\right],$$" src="/images/HybridSystem_demo_eq09729852365959953811.png" style="width:83px;height:18px;"/>
+   </p>
+   <p>
+    then we could define the following immutable properties:
+   </p>
+   <pre class="language-matlab">v_indices = 1:4;
+u_indices = 4 + (1:4); % These parentheses are important!
+</pre>
+   <p>
+    Then, we can extract
+    <tt>u</tt>
+    and
+    <tt>v</tt>
+    from
+    <tt>x</tt>
+    as
+   </p>
+   <pre class="language-matlab">v = x(v_indices);
+u = x(u_indices);
+</pre>
+   <p>
+    Next, in
+    <tt>BouncingBall</tt>
+    , the
+    <tt>methods</tt>
+    block defines functions that can be called on
+    <tt>BouncingBall</tt>
+    objects. Every subclass of
+    <tt>HybridSystem</tt>
+    must define the functions
+    <tt>flowMap</tt>
+    ,
+    <tt>jumpMap</tt>
+    ,
+    <tt>flowSetIndicator</tt>
+    , and
+    <tt>jumpSetIndicator</tt>
+    . The indicator functions must return
+    <tt>1</tt>
+    inside their respective sets and
+    <tt>0</tt>
+    otherwise.
+   </p>
+   <pre class="language-matlab">function xdot = flowMap(this, x, t, j)
+    % Define the flow map f.
+    % Set xdot to the value of f(x, t, j).
+    ...
+end
+</pre>
+   <pre class="language-matlab">function xplus = jumpMap(this, x, t, j)
+    % Define the jump map g.
+    % Set xplus to the value of g(x, t, j).
+    ...
+end
+</pre>
+   <pre class="language-matlab">function inC = flowSetIndicator(this, x, t, j)
+    % Define the flow set C.
+    % Set 'inC' to 1 if 'x' is in the flow set C and to 0 otherwise.
+    ...
+end
+</pre>
+   <pre class="language-matlab">function inD = jumpSetIndicator(this, x, t, j)
+    % Define the flow set C.
+    % Set 'inD' to 1 if 'x' is in the jump set D and to 0 otherwise.
+    ...
+end
+</pre>
+   <p>
+    Notice that the first argument in each function method is
+    <tt>this</tt>
+    , which provides a reference to the object on which the function was called. The object's properties are referenced within the methods using
+    <tt>this.gamma</tt>
+    ,
+    <tt>this.lambda</tt>
+    , etc. After the
+    <tt>this</tt>
+    argument, there must be one, two, or three arguments that are either
+    <tt>(x)</tt>
+    ,
+    <tt>(x, t)</tt>
+    , or
+    <tt>(x, t, j)</tt>
+    , as needed. The full class definition of
+    <tt>BouncingBall</tt>
+    is shown next.
+   </p>
+   <pre class="language-matlab">
+classdef BouncingBall < HybridSystem
+    % A bouncing ball modeled as a HybridSystem subclass.
+
+    % Define variable properties that can be modified.
+    properties
+        gamma = 9.8;  % Acceleration due to gravity.
+        lambda = 0.9; % Coefficient of restitution.
+    end
+
+    % Define constant properties that cannot be modified (i.e., "immutable").
+    properties(SetAccess = immutable) 
+        % The index of 'height' component 
+        % within the state vector 'x'. 
+        height_index = 1;
+        
+        % The index of 'velocity' component 
+        % within the state vector 'x'. 
+        velocity_index = 2;
+    end
+
+    methods 
+        function this = BouncingBall()
+            % Constructor for instances of the BouncingBall class.
+
+            % Call the constructor for the HybridSystem superclass and
+            % pass it the state dimension. This is not strictly necessary, 
+            % but it enables more error checking.
+            state_dim = 2;
+            this = this@HybridSystem(state_dim);
+        end
+
+        % To define the data of the system, we implement 
+        % the abstract functions from HybridSystem.m
+
+        function xdot = flowMap(this, x, t, j)
+            % Extract the state components.
+            v = x(this.velocity_index);
+
+            % Define the value of f(x). 
+            xdot = [v; -this.gamma];
+        end
+
+        function xplus = jumpMap(this, x)
+            % Extract the state components.
+            h = x(this.height_index);
+            v = x(this.velocity_index);
+
+            % Define the value of g(x). 
+            xplus = [h; -this.lambda*v];
+        end
+        
+        function inC = flowSetIndicator(this, x)
+            % Extract the state components.
+            h = x(this.height_index);
+            v = x(this.velocity_index);
+
+            % Set 'inC' to 1 if 'x' is in the flow set and to 0 otherwise.
+            inC = (h >= 0) || (v >= 0);
+        end
+
+        function inD = jumpSetIndicator(this, x)
+            % Extract the state components.
+            h = x(this.height_index);
+            v = x(this.velocity_index);
+
+            % Set 'inD' to 1 if 'x' is in the jump set and to 0 otherwise.
+            inD = (h <= 0) && (v <= 0);
+        end
+    end
+end
+
+</pre>
+   <p>
+    An instance of the
+    <tt>BouncingBall</tt>
+    class is then created as follows:
+   </p>
+   <pre class="codeinput">bb_system = hybrid.examples.BouncingBall();
+</pre>
+   <p>
+    Values of the properties can be modified using dot indexing on the object:
+   </p>
+   <pre class="codeinput">bb_system.gamma = 3.72;
+bb_system.lambda = 0.8;
+</pre>
+   <p>
+    For more information about writing MATLAB classes, see the
+    <a href="https://www.mathworks.com/help/matlab/matlab_oop/create-a-simple-class.html">
+     online MATLAB documentation
+    </a>
+    .
+   </p>
+   <p>
+    WARNING: The functions
+    <tt>flowMap</tt>
+    ,
+    <tt>flowSetIndicator</tt>
+    , and
+    <tt>jumpSetIndicator</tt>
+    must be deterministic—each time they are called for a given set of inputs
+    <tt>(x, t, j)</tt>
+    , they must return the same output values. In other words,
+    <tt>flowMap</tt>
+    ,
+    <tt>flowSetIndicator</tt>
+    , and
+    <tt>jumpSetIndicator</tt>
+    must be
+    <i>
+     functions
+    </i>
+    in the mathematical sense. If they depend on system parameters stored as object properties, then those parameters must be constant during each execution of
+    <tt>HybridSystem.solve</tt>
+    (described below). It is okay to change the system parameters in between calls to
+    <tt>solve</tt>
+    , but all values that change during a solution, must be included in the state vector
+    <tt>x</tt>
+    .
+   </p>
+   <p>
+    The reason for this warning is that modifying system parameters within
+    <tt>flowMap</tt>
+    ,
+    <tt>flowSetIndicator</tt>
+    , or
+    <tt>jumpSetIndicator</tt>
+    will produce unpredictable behavior because the hybrid solver does not move monotonically forward in time; Sometimes, the solver backtracks while computing a solution to
+    \(\dot{x} = f(x),\)
+    such as when searching for the time when
+    \(x\)
+    enters
+    \(D\)
+    or leaves
+    \(C\)
+    . The
+    <tt>jumpMap</tt>
+    , on the other hand, can be nondeterministic, such as including random noise, without causing the same sort of problems because the solver never backtracks across a jump.
+   </p>
+   <p>
+    To protect against accidentally modifying system parameters, each parameter can be stored as an
+    <a href="https://www.mathworks.com/help/matlab/matlab_oop/mutable-and-immutable-properties.html">
+     immutable object property
+    </a>
+    that is set when the
+    <tt>HybridSystem</tt>
+    object is constructed. The value of an immutable property cannot be modified after an object is created. An example of how to implement an immutable property is included here:
+   </p>
+   <pre class="language-matlab">classdef MyHybridSystem < HybridSystem
+   properties(SetAccess=immutable)
+       my_property % cannot be modified except in the constructor
+   end
+   methods
+       function this = MyHybridSystem(my_property) % Constructor
+           this.my_property = my_property; % set immutable property value.
+       end
+   end
+end
+</pre>
+   <p>
+    The value of
+    <tt>my_property</tt>
+    is set when a
+    <tt>MyHybridSystem</tt>
+    is constructed:
+   </p>
+   <pre class="language-matlab">sys = MyHybridSystem(3.14);
+assert(sys.my_property == 3.14)
+</pre>
+   <p>
+    For more information about immutable properties see the MATLAB documentation
+    <a href="https://www.mathworks.com/help/matlab/matlab_oop/mutable-and-immutable-properties.html">
+     here
+    </a>
+    .
+   </p>
+   <h2 id="5">
+    Asserting Conditions on Hybrid Systems
+   </h2>
+   <p>
+    When implementing a hybrid system, it is helpful to verify that certain points are or are not in
+    \(C\)
+    or in
+    \(D.\)
+    This is accomplished in
+    <tt>HybridSystem</tt>
+    with four functions:
+    <tt>assertInC</tt>
+    ,
+    <tt>assertInD</tt>
+    ,
+    <tt>assertNotInC</tt>
+    , and
+    <tt>assertNotInD</tt>
+    .
+   </p>
+   <pre class="codeinput">% Define some points.
+x_ball_above_ground = [1; 0];
+x_ball_at_ground    = [0; 0]; % and stationary
+x_ball_below_ground = [-1; -1]; % and moving down
+
+% Check the above-ground point.
+bb_system.assertInC(x_ball_above_ground);
+bb_system.assertNotInD(x_ball_above_ground);
+
+% Check the at-ground point.
+bb_system.assertInC(x_ball_at_ground);
+bb_system.assertInD(x_ball_at_ground);
+
+% Check the below-ground point.
+bb_system.assertNotInC(x_ball_below_ground);
+bb_system.assertInD(x_ball_below_ground);
+</pre>
+   <p>
+    In addition to checking that a given point is in the desired set, the functions
+    <tt>assertInC</tt>
+    ,
+    <tt>assertInD</tt>
+    check that the flow or jump map, respectively, can be evaluated at the point and produces a vector with the correct dimensions.
+   </p>
+   <p>
+    If an assertion fails, as in following code, then an error is thrown and execution is terminated (unless caught by a try-catch block):
+   </p>
+   <pre class="codeinput">try
+    bb_system.assertInD(x_ball_above_ground) % This fails.
+catch e
+    fprintf(2,'Error: %s\n', e.message);
+end
+</pre>
+   <pre class="codeoutput">Error: The point
+  x: [1;0]
+was expected to be inside D but was not.
+</pre>
+   <h2 id="7">
+    Compute Solutions
+   </h2>
+   <p>
+    A numerical approximation of a solution to the hybrid system is computed by calling the
+    <tt>solve</tt>
+    function. The
+    <tt>solve</tt>
+    function returns a
+    <tt>HybridSolution</tt>
+    object that contains information about the (approximate) solution (use the properties
+    <tt>t</tt>
+    ,
+    <tt>j</tt>
+    , and
+    <tt>x</tt>
+    to recover the standard output from
+    <tt>HyEQSolver</tt>
+    ). To compute a solution, pass the initial state and time spans to the
+    <tt>solve</tt>
+    function (
+    <tt>solve</tt>
+    is defined in the
+    <tt>HybridSystem</tt>
+    class and
+    <tt>bb_system</tt>
+    is a
+    <tt>HybridSystem</tt>
+    object because
+    <tt>BouncingBall</tt>
+    is a subclass of
+    <tt>HybridSystem</tt>
+    ). Optionally, a
+    <tt>HybridSolverConfig</tt>
+    object can be passed to the solver to set various configurations (see below).
+   </p>
+   <pre class="codeinput">x0 = [10, 0];
+tspan = [0, 20];
+jspan = [0, 30];
+config = HybridSolverConfig('refine', 32); % Improves plot smoothness for demo.
+sol = bb_system.solve(x0, tspan, jspan, config);
+plotFlows(sol); % Display solution
+</pre>
+   <img alt="" hspace="5" src="/images/HybridSystem_demo_01.png" vspace="5"/>
+   <p>
+    The use of
+    <tt>HybridSolverConfig</tt>
+    is described below, in
+    <a href="#configuration_options">
+     "Solver Configuration Options"
+    </a>
+   </p>
+   <p>
+    The option
+    <tt>'refine'</tt>
+    for
+    <tt>HybridSolverConfig</tt>
+    causes computed ODE solutions to be smoothly interpolated between timesteps. For documentation about plotting hybrid arcs, see
+    <a href="/HybridPlotBuilder_demo">Plotting Hybrid Arcs</a>
+    .
+   </p>
+   <h2 id="9">
+    Information About Solutions
+   </h2>
+   <p>
+    The return value of the
+    <tt>solve</tt>
+    method is a
+    <tt>HybridSolution</tt>
+    object that contains information about the solution.
+   </p>
+   <pre class="codeinput">sol
+</pre>
+   <pre class="codeoutput">sol = 
+  HybridSolution with properties:
+
+                      x0: [2×1 double]
+                      xf: [2×1 double]
+       termination_cause: T_REACHED_END_OF_TSPAN
+                       t: [4111×1 double]
+                       j: [4111×1 double]
+                       x: [4111×2 double]
+            flow_lengths: [15×1 double]
+              jump_times: [14×1 double]
+    shortest_flow_length: 0.1515
+       total_flow_length: 20
+              jump_count: 14
+</pre>
+   <p>
+    A description of each
+    <tt>HybridSolution</tt>
+    property is as follows:
+   </p>
+   <div>
+    <ul>
+     <li>
+      <tt>t</tt>
+      : The continuous time values of the solution's hybrid time domain.
+     </li>
+     <li>
+      <tt>j</tt>
+      : The discrete time values of the solution's hybrid time domain.
+     </li>
+     <li>
+      <tt>x</tt>
+      : The state vector of the solution.
+     </li>
+     <li>
+      <tt>x0</tt>
+      : The initial state of the solution.
+     </li>
+     <li>
+      <tt>xf</tt>
+      : The final state of the solution.
+     </li>
+     <li>
+      <tt>flow_lengths</tt>
+      : the durations of each interval of flow.
+     </li>
+     <li>
+      <tt>jump_times</tt>
+      : the continuous times when each jump occured.
+     </li>
+     <li>
+      <tt>shortest_flow_length</tt>
+      : the length of the shortest interval of flow.
+     </li>
+     <li>
+      <tt>total_flow_length</tt>
+      : the length of the entire solution in continuous time.
+     </li>
+     <li>
+      <tt>jump_count</tt>
+      : the number of discrete jumps.
+     </li>
+     <li>
+      <tt>termination_cause</tt>
+      : the reason that the solution terminated.
+     </li>
+    </ul>
+   </div>
+   <p>
+    The possible values for
+    <tt>termination_cause</tt>
+    are
+   </p>
+   <div>
+    <ul>
+     <li>
+      <tt>STATE_IS_INFINITE</tt>
+     </li>
+     <li>
+      <tt>STATE_IS_NAN</tt>
+     </li>
+     <li>
+      <tt>STATE_NOT_IN_C_UNION_D</tt>
+     </li>
+     <li>
+      <tt>T_REACHED_END_OF_TSPAN</tt>
+     </li>
+     <li>
+      <tt>J_REACHED_END_OF_JSPAN</tt>
+     </li>
+     <li>
+      <tt>CANCELED</tt>
+     </li>
+    </ul>
+   </div>
+   <h2 id="11">
+    Modifying Hybrid Arcs
+   </h2>
+   <p>
+    Often, after calculating a solution to a hybrid system, we wish to manipulate the resulting data, such as evaluating a function along the solution, removing some of the components, or truncating the hybrid domain. Several functions to this end are included in the
+    <tt>HybridArc</tt>
+    class (
+    <tt>HybridSolution</tt>
+    is a subclass of
+    <tt>HybridArc</tt>
+    , so the solutions generated by
+    <tt>HybridSystem.solve</tt>
+    are
+    <tt>HybridArc</tt>
+    objects). In particular, the functions are
+    <tt>select</tt>
+    ,
+    <tt>transform</tt>
+    ,
+    <tt>restrictT</tt>
+    and
+    <tt>restrictJ</tt>
+    . See
+    <tt><a href="matlab:doc('HybridArc')">doc('HybridArc')</a></tt>
+    for details.
+   </p>
+   <pre class="codeinput">hybrid_arc = sol.select(1);                   % Pick the 1st component.
+hybrid_arc = hybrid_arc.transform(@(x) -x);   % Negate the value.
+hybrid_arc = hybrid_arc.restrictT([1.5, 12]); % Truncate to t-values between 4.5 and 7.
+hybrid_arc = hybrid_arc.restrictJ([2, inf]);  % Truncate to j-values >= 2.
+
+% Plot hybrid arcs
+clf
+hpb = HybridPlotBuilder();
+hpb.color('black').legend('Original').plotFlows(sol.select(1));
+hold on
+hpb.color('red').legend('Modified').plotFlows(hybrid_arc)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridSystem_demo_02.png" vspace="5"/>
+   <p>
+    <b>
+     Example:
+    </b>
+    Suppose we want to compute the total energy of the bouncing ball:
+   </p>
+   <p>
+    <img alt="$$E(x) = \gamma x_1 + \frac{1}{2} x_2^2.$$" src="/images/HybridSystem_demo_eq14543380187058855037.png" style="width:120px;height:30px;"/>
+   </p>
+   <p>
+    We can map the
+    <tt>HybridArc</tt>
+    object
+    <tt>sol</tt>
+    to a new
+    <tt>HybridArc</tt>
+    with the
+    <tt>transform</tt>
+    function. (Note that the state dimension before (
+    \(n=2\)
+    ) and after (
+    \(n=1\)
+    ) are not the same.)
+   </p>
+   <pre class="codeinput">clf
+energy_fnc = @(x) bb_system.gamma*x(1) + 0.5*x(2)^2;
+plotFlows(sol.transform(energy_fnc))
+title('Total Energy of Bouncing Ball')
+ylabel('Energy')
+</pre>
+   <img alt="" hspace="5" src="/images/HybridSystem_demo_03.png" vspace="5"/>
+   <p>
+    You can also construct a
+    <tt>HybridArc</tt>
+    directly from the values of
+    <tt>t</tt>
+    ,
+    <tt>j</tt>
+    , and
+    <tt>x</tt>
+    as follows:
+   </p>
+   <pre class="codeinput">t = linspace(0, 10, 100)'; % Must be a column vector
+j = zeros(100, 1);
+x = t.^2;
+hybrid_arc = HybridArc(t, j, x)
+</pre>
+   <pre class="codeoutput">hybrid_arc = 
+  HybridArc with properties:
+
+                       t: [100×1 double]
+                       j: [100×1 double]
+                       x: [100×1 double]
+            flow_lengths: 10
+              jump_times: [0×1 double]
+    shortest_flow_length: 10
+       total_flow_length: 10
+              jump_count: 0
+</pre>
+   <p>
+    <p id="configuration_options">
+    </p>
+    <h2 id="15">
+     Solver Configuration Options
+    </h2>
+    <p>
+     To configure the hybrid solver, create a
+     <tt>HybridSolverConfig</tt>
+     object and pass it to
+     <tt>solve</tt>
+     as follows:
+    </p>
+    <pre class="codeinput">config = HybridSolverConfig('AbsTol', 1e-3);
+bb_system.solve(x0, tspan, jspan, config);
+</pre>
+    <p>
+     There are three categories of options that can be configured with
+     <tt>HybridSolverConfig</tt>
+     :
+    </p>
+    <div>
+     <ol>
+      <li>
+       Jump/Flow Priority for determining the behavior of solutions in
+       \(C \cap D\)
+       .
+      </li>
+      <li>
+       ODE solver options.
+      </li>
+      <li>
+       Hybrid solver progress updates options.
+      </li>
+     </ol>
+    </div>
+    <p>
+     <h3>
+      Jump/Flow Priority
+     </h3>
+    </p>
+    <p>
+     By default, the hybrid solver gives precedence to jumps when the solution is in the intersection of the flow and jump sets. This can be changed by setting the
+     <tt>priority</tt>
+     to one of the (case insensitive) strings
+     <tt>'flow'</tt>
+     or
+     <tt>'jump'</tt>
+     . For an example for how changing the priority affects solutions, see
+     <a href="/Help_behavior_in_C_intersection_D">Behavior in the Intersection of C and D</a>
+     (the linked example uses Simulink instead of MATLAB, which has an additional "random" priority mode, not currently supported in the MATLAB HyEQ library).
+    </p>
+    <pre class="codeinput">config.priority('flow');
+config.priority('jump');
+</pre>
+    <p>
+     <h3>
+      ODE Solver Options
+     </h3>
+    </p>
+    <p>
+     The ODE solver function and solver options can be modified in
+     <tt>config</tt>
+     . To set the ODE solver, pass the name of the ODE solver function name to the
+     <tt>odeSolver</tt>
+     function. The default is
+     <tt>'ode45'</tt>
+     . For guidence in picking an ODE solver, see
+     <a href="https://www.mathworks.com/help/matlab/math/choose-an-ode-solver.html">
+      this list
+     </a>
+     .
+    </p>
+    <pre class="codeinput">config.odeSolver('ode23s');
+</pre>
+    <p>
+     Most of the options for the builtin MATLAB ODE solvers (described
+     <a href="matlab:doc('odeset')">
+      here
+     </a>
+     ) can be set within
+     <tt>HybridSolverConfig</tt>
+     . A list of supported functions is provided below. To set an ODE solver option, use the
+     <tt>odeOption</tt>
+     function:
+    </p>
+    <pre class="codeinput">config.odeOption('AbsTol', 1e-3); % Set the absolute error tolerance for each time step.
+</pre>
+    <p>
+     Several commonly used options can be set by passing name-value pairs to the
+     <tt>HybridSolverConfig</tt>
+     constructor. The options that can be set this way are
+     <tt>'odeSolver'</tt>
+     ,
+     <tt>'RelTol'</tt>
+     ,
+     <tt>'AbsTol'</tt>
+     ,
+     <tt>'MaxStep'</tt>
+     ,
+     <tt>'Jacobian'</tt>
+     , and
+     <tt>'Refine'</tt>
+     .
+    </p>
+    <pre class="codeinput">config = HybridSolverConfig('odeSolver', 'ode23s', ...
+                            'RelTol', 1e-3, 'AbsTol', 1e-4,  ...
+                            'MaxStep', 0.5, 'Refine', 4);
+
+% Display the options struct.
+config.ode_options
+</pre>
+    <pre class="codeoutput">ans = 
+  struct with fields:
+
+              AbsTol: 1.0000e-04
+                 BDF: []
+              Events: []
+         InitialStep: []
+            Jacobian: []
+           JConstant: []
+            JPattern: []
+                Mass: []
+        MassSingular: []
+            MaxOrder: []
+             MaxStep: 0.5000
+         NonNegative: []
+         NormControl: []
+           OutputFcn: []
+           OutputSel: []
+              Refine: 4
+              RelTol: 1.0000e-03
+               Stats: []
+          Vectorized: []
+    MStateDependence: []
+           MvPattern: []
+        InitialSlope: []
+</pre>
+    <p>
+     Some of the ODE solver options have not been tested with the hybrid equation solver. The following table lists all ODE solver options and information about whether the HyEQ solver supports each. For a description of each option, see
+     <tt><a href="matlab:doc('odeset')">doc('odeset')</a>.</tt>
+    </p>
+    <p>
+     <table>
+      <tr>
+       <th>
+        ODE Option
+       </th>
+       <th>
+        Supported?
+       </th>
+      </tr>
+      <tr>
+       <td>
+        RelTol
+       </td>
+       <td>
+        Yes
+       </td>
+      </tr>
+      <tr>
+       <td>
+        AbsTol
+       </td>
+       <td>
+        Yes
+       </td>
+      </tr>
+      <tr>
+       <td>
+        NormControl
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        NonNegative
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        OutputFcn
+       </td>
+       <td>
+        No. Use 'progress' function.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        OutputSel
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Refine
+       </td>
+       <td>
+        Yes
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Stats
+       </td>
+       <td>
+        Yes, but will print stats
+        after each interval of flow.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        InitialStep
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        MaxStep
+       </td>
+       <td>
+        Yes
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Events
+       </td>
+       <td>
+        No
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Jacobian
+       </td>
+       <td>
+        Yes
+       </td>
+      </tr>
+      <tr>
+       <td>
+        JPattern
+       </td>
+       <td>
+        Yes
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Vectorized
+       </td>
+       <td>
+        Untested, but probably won't work.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Mass
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        MStateDependence
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        MvPattern
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        MassSingular
+       </td>
+       <td>
+        Untested
+       </td>
+      </tr>
+      <tr>
+       <td>
+        InitialSlope
+       </td>
+       <td>
+        Yes, for DAEs
+       </td>
+      </tr>
+     </table>
+    </p>
+    <p>
+     <h3>
+      Progress Updates
+     </h3>
+    </p>
+    <p>
+     Computing a hybrid solution can take considerable time, so progress updates are displayed. Progress updates can be disabled by passing
+     <tt>'silent'</tt>
+     to
+     <tt>config.progess()</tt>
+     .
+    </p>
+    <pre class="codeinput">config.progress('silent');
+
+% To restore the default behavior:
+config.progress('popup');
+</pre>
+    <p>
+     For brevity,
+     <tt>'silent'</tt>
+     can be also be passed as the first argument to the
+     <tt>HybridSolverConfig</tt>
+     constructor.
+    </p>
+    <pre class="language-matlab">HybridSolverConfig('silent', <other options>);
+</pre>
+    <p>
+     Alternatively,
+     <tt>'silent'</tt>
+     can be passed directly to
+     <tt>solve</tt>
+     in place of
+     <tt>config</tt>
+     , if no other solver configurations are desired.
+    </p>
+    <pre class="language-matlab">bb_system.solve(x0, tspan, jspan, 'silent');
+</pre>
+    <h2 id="24">
+     Concise Hybrid System Definitions
+    </h2>
+    <p>
+     We also provide a quicker way to create a hybrid system in-line instead of creating a new subclass of HybridSystem. This approach creates systems that are slower to solve and harder to debug, so use with care—creating a subclass of
+     <tt>HybridSystem</tt>
+     is the recommended method for defining complicated systems.
+    </p>
+    <pre class="codeinput">system_inline = HybridSystemBuilder() ...
+            .f(@(x, t) t*x) ...
+            .g(@(x) -x/2) ...
+            .C(@(x) 1) ...
+            .D(@(x, t, j) abs(x) >= j) ...
+            .build();
+sol_inline = system_inline.solve(0.5, [0, 10], [0, 10]);
+</pre>
+    <p>
+     The functions
+     <tt>f</tt>
+     ,
+     <tt>g</tt>
+     ,
+     <tt>C</tt>
+     and
+     <tt>D</tt>
+     can have 1, 2, or 3 input arguments, namely
+     <tt>(x)</tt>
+     ,
+     <tt>(x,t)</tt>
+     , or
+     <tt>(x, t, j)</tt>
+     .
+    </p>
+    <p>
+     The definition of hybrid systems can be made even more concise by passing function handles for
+     <tt>f</tt>
+     ,
+     <tt>g</tt>
+     ,
+     <tt>C</tt>
+     and
+     <tt>D</tt>
+     to the
+     <tt>HybridSystem</tt>
+     function, which constructs a
+     <tt>HybridSystem</tt>
+     with the given data. Again, this approach is slower and harder to debug, so it is not generally recommended.
+    </p>
+    <pre class="codeinput">f = @(x, t) t*x;
+g = @(x) -x/2;
+C = @(x) 1;
+D = @(x, t, j) abs(x) >= j;
+system_inline = HybridSystem(f, g, C, D);
+</pre>
+   </p>
+  </div>
+ </body>
+</html>{% endraw %}

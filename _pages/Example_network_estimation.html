@@ -1,0 +1,632 @@
+---
+layout: single
+title: |
+    Example 4: Estimation Over a Network
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In this example, a physical plant, its output digitally transmitted through a network, and a state estimator are modeled in Simulink as a hybrid system.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Steps to Run Model
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#6">
+       Example Output
+      </a>
+     </li>
+     <li>
+      <a href="#8">
+       References
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the
+    <a href="/MATLAB_packages">package</a>
+    <tt>hybrid.examples.network_estimation</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="matlab:open('hybrid.examples.network_estimation.initialize')">
+       initialize.m
+      </a>
+     </li>
+     <li>
+      <a href="matlab:hybrid.examples.network_estimation.network_est">
+       network_est.slx
+      </a>
+     </li>
+     <li>
+      <a href="matlab:open('hybrid.examples.network_estimation.postprocess')">
+       postprocess.m
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples','+hybrid','+examples','+network_estimation'))">
+     <tt>Examples\+hybrid\+examples\network_estimation</tt>
+    </a>
+    (clicking this link changes your working directory).
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    Consider a physical process given in terms of the state-space model
+   </p>
+   <p>
+    <img alt="$$
+\begin{array}{l}
+\dot{x}=A x,\\
+y= M x
+\end{array}
+$$" src="/images/Example_network_estimation_eq01189805027596277778.png" style="width:50px;height:32px;"/>
+   </p>
+   <p>
+    where
+    \(x \in \mathbb{R}^{n_P}\)
+    is the state and
+    \(y \in \mathbb{R}^{r_P}\)
+    is the measured output. The output is digitally transmitted through a network. At the other end of the network, a computer receives the information and runs an algorithm that takes the measurements of
+    \(y\)
+    to estimate the state
+    \(x\)
+    of the physical process.
+   </p>
+   <p>
+    We consider an estimation algorithm with a state variable
+    \(\hat{x} \in \mathbb{R}^{n_P}\)
+    , which denotes the estimate of
+    \(x\)
+    , that is appropriately reset to a new value involving the information received. More precisely, denoting the transmission times by
+    \(t_i\)
+    and
+    \(L\)
+    a constant matrix to be designed, the estimation algorithm updates its state as follows
+   </p>
+   <p>
+    <img alt="$$
+\hat{x}^+=\hat{x}+L(y-M\hat{x})
+$$" src="/images/Example_network_estimation_eq03069945942094071498.png" style="width:133px;height:17px;"/>
+   </p>
+   <p>
+    at every instant information is received. In between such events, the algorithm updates its state continuously so as to match the evolution of the state of the physical process, that is, via
+   </p>
+   <p>
+    <img alt="$$
+\dot{\hat{x}} = A \hat{x}
+$$" src="/images/Example_network_estimation_eq12294769281860018989.png" style="width:46px;height:14px;"/>
+   </p>
+   <p>
+    Modeling the network as a hybrid system, which, in particular, assumes zero transmission delay, the state variables of the entire system are
+    \(j_N\)
+    ,
+    \(\tau_N \in \mathbb{R}\)
+    ,
+    \(m_N \in \mathbb{R}^{r_P}\)
+    , and
+    \(x,\ \hat{x}\in \mathbb{R}^{n_P}\)
+    . Then, transmissions occur when
+    \(\tau_N \leq 0\)
+    , at which events the state of the network is updated via
+   </p>
+   <p>
+    <img alt="$$
+\tau_N^+ \in [T^{*\min}_{N},T^{*\max}_{N}],\quad j_N^+ = j_N+1, \qquad m_N^+ = y
+$$" src="/images/Example_network_estimation_eq18039343669185494715.png" style="width:306px;height:18px;"/>
+   </p>
+   <p>
+    and the state of the algorithm is updated via
+    \(\hat{x}^+=\hat{x}+L(y-M\hat{x})\)
+    . Note that since the state of the physical process does not change at such events, we can use the following trivial difference equation to update it at the network events:
+   </p>
+   <p>
+    <img alt="$$
+x^+ = x
+$$" src="/images/Example_network_estimation_eq11357611808412554880.png" style="width:44px;height:13px;"/>
+   </p>
+   <p>
+    In between events, the state of the network is updated as
+   </p>
+   <p>
+    <img alt="$$
+\dot{\tau}_N = -1, \qquad \dot{j}_N,\dot{m}_N = 0
+$$" src="/images/Example_network_estimation_eq00984683332065699108.png" style="width:163px;height:17px;"/>
+   </p>
+   <p>
+    the state of the algorithm changes continuously according to
+    \(\dot{\hat{x}} = A \hat{x}\)
+    , and the state of the physical process changes according to
+    \(\dot{x}=A x , y= M x\)
+    . Based on the equations above, we pick the following data for each of the subsystems in the Simulink Model:
+   </p>
+   <p>
+    <b>
+     Physical process:
+    </b>
+   </p>
+   <p>
+    <img alt="$$ \begin{array}{l@{}l}
+f_P(x, u):= Ax + Bu, \quad
+   &C_P := \mathbf{R}^{n_p}\times\mathbf{R}, \\
+G_P(x, u):= x, \quad
+    &D_P := \emptyset,\\
+y = h(x) : =Mx
+\end{array}$$" src="/images/Example_network_estimation_eq11852906703054436761.png" style="width:251px;height:50px;"/>
+   </p>
+   <p>
+    where
+   </p>
+   <p>
+    <img alt="$$\begin{array}{l@{}l}
+A =
+\left[\begin{tabular}{cccc}
+0&1&0&0\\
+-1&0&0&0\\
+-2&1&-1&0\\
+2&-2&0&-2
+\end{tabular}\right],\quad
+B = \left[\begin{tabular}{c} 0\\0\\1\\0 \end{tabular}\right],\quad
+M = \left[\begin{tabular}{cccc}1&0&0&0\end{tabular}\right],
+\end{array}$$" src="/images/Example_network_estimation_eq07197155437663834835.png" style="width:446px;height:71px;"/>
+   </p>
+   <p>
+    \(n_p=4\)
+    ,
+    \(r_p=1\)
+    ,
+    \(x \in\mathbb{R}^{n_p}\)
+    ,
+    \(y\in\mathbb{R}^{r_p}\)
+    , and
+    \(u\in\mathbb{R}\)
+    .
+   </p>
+   <p>
+    <b>
+     Network:
+    </b>
+   </p>
+   <p>
+    <img alt="$$\begin{array}{l@{}l}
+f(x_N, u_N):= \left[\begin{tabular}{c}
+0\\0\\-1
+\end{tabular}\right],\quad
+   &C := \{(x_N,u_N)\mid \tau_N \geq 0 \},\\
+g(x_N, u_N):= \left[\begin{tabular}{c}
+$u_N$ \\ $j_N +1$ \\  $\tau_r$
+\end{tabular}\right],\quad
+    &D :=\{(x_N,u_N)\mid \tau_N \leq 0 \},\\
+y_N = h(x_N) : =x_N
+\end{array}$$" src="/images/Example_network_estimation_eq02174874160877729110.png" style="width:350px;height:122px;"/>
+   </p>
+   <p>
+    where
+   </p>
+   <p>
+    \(\tau_r\in[T^{*\min}_{N},T^{*\max}_{N}]\)
+    is a random variable that models the time in-between communication instances. Also, the sate and the input are given by
+    \(x_N=(m_N,j_N,\tau_N)\in\mathbb{R}\times\mathbb{R}\times\mathbb{R}\)
+    , and
+    \(u_N=y\in\mathbb{R}^{r_p}\)
+    , respectively.
+   </p>
+   <p>
+    <b>
+     Estimator:
+    </b>
+   </p>
+   <p>
+    <img alt="$$\begin{array}{ll}
+f(x_E, u_E):=
+\left[\begin{tabular}{cc}
+$A$ &0 \\ 0 & 0
+\end{tabular}\right]x_E + \left[\begin{tabular}{c}
+$B$\\0
+\end{tabular}\right]v,\quad
+   &C := \{(x_E,u_E) \mid j_E = j_N \},\\
+g((\hat{x},j_E), u_E):= \left[\begin{tabular}{c}
+$\hat{x} + L(m_N-M\hat{x})$\\
+$j_N$
+\end{tabular}\right],\quad
+    &D :=\{(x,u) \mid j_E\in\mathbf{N}\setminus j_N\},
+\end{array}$$" src="/images/Example_network_estimation_eq16041980566415392121.png" style="width:466px;height:71px;"/>
+   </p>
+   <p>
+    where
+    \(L\)
+    , which is designed as in [1], is given by
+   </p>
+   <p>
+    <img alt="$$\begin{array}{l}
+L := \left[\begin{tabular}{c}
+1 \\ -0.9433\\ -0.6773\\1.6274
+\end{tabular}\right],
+\end{array}$$" src="/images/Example_network_estimation_eq10415313450339739429.png" style="width:122px;height:71px;"/>
+   </p>
+   <p>
+    the input and the state are given by
+    \(u_E = (x_N,v) = ((m_N,j_N,\tau_N),v)\in\mathbb{R}\times\mathbb{R}\times\mathbb{R}\times\mathbb{R}\)
+    , and
+    \(x_E=(\hat{x},j_E)\in\mathbb{R}^{4}\times\mathbb{R}\)
+    , respectively. Notice that the estimator block (Estimator) in the Simulink Model is implemented using a regular hybrid system block with embedded functions.
+   </p>
+   <p>
+    For each hybrid system in the Simulink Model (Continuous Process, network, and Estimator) we have the following Matlab embedded functions that describe the sets
+    \(C\)
+    and
+    \(D\)
+    and functions
+    \(f\)
+    and
+    \(g\)
+    .
+   </p>
+   <h2 id="3">
+    Steps to Run Model
+   </h2>
+   <p>
+    The following procedure is used to simulate the example using the model in the file
+    <tt>network_est.slx</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      Open
+      <a href="matlab:hybrid.examples.network_estimation.network_est">
+       <tt>network_est.slx</tt>
+      </a>
+      in Simulink.
+     </li>
+     <li>
+      Double-click the block labeled
+      <i>
+       Double Click to Initialize
+      </i>
+      .
+     </li>
+     <li>
+      To start the simulation, click the
+      <i>
+       run
+      </i>
+      button or select
+      <tt>Simulation>Run</tt>
+      .
+     </li>
+     <li>
+      Once the simulation finishes, click the block labeled
+      <i>
+       Double Click to Plot Solutions
+      </i>
+      . Several plots of the computed solution will open.
+     </li>
+    </ul>
+   </div>
+   <h2 id="4">
+    Simulink Model
+   </h2>
+   <p>
+    The following diagram shows the Simulink model of the estimator over a network example. The contents of the blocks
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    ,
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    , etc., are shown below. When the Simulink model is open, the blocks can be viewed and modified by double clicking on them.
+   </p>
+   <img alt="" hspace="5" src="/images/Example_network_estimation_01.png" vspace="5"/>
+   <p>
+    The Simulink blocks for the hybrid systems in this example are included below.
+   </p>
+   <p>
+    <h3>
+     Continuous Process:
+    </h3>
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function zdot = f(z, u, parameters)
+    % Flow map for Estimation over a network
+    
+    A = parameters.A;
+    B = parameters.B;
+
+    zdot = A*z + B*u;
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC = C(x, u, parameters) %#ok<INUSD>
+    % Flow set indicator function.
+    inC = 1;
+end
+
+</pre>
+   <p>
+    For more info about
+    <i>
+     Continuous-time Plant
+    </i>
+    blocks, such as
+    <b>
+     Continuous Process
+    </b>
+    , see
+    <a href="/CPS_continuous_plant">here</a>
+    .
+   </p>
+   <p>
+    <h3>
+     Network:
+    </h3>
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xdot = f(x, u)
+    % Network flow map
+    n = length(u); % measured input size
+
+    msdot = zeros(n,1); % measured continuous dynamics
+    jdot = 0;
+    tau_sdot = -1; % Timer tau_s
+    xdot = [msdot; jdot; tau_sdot];
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC = C(x, vs, T_max) 
+    % Flow set indicator function
+    tau_s = x(end); % timer state
+
+    if tau_s >= 0 && tau_s <= T_max
+        inC = 1; % report flow
+    elseif tau_s> T_max
+        inC = 0; % do not report flow
+    else
+        inC = 0;
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xplus = g(x, vs, measurement_times)
+    % Jump map for network.
+
+    n = length(vs); % input size
+    j = x(n+1);
+    msplus = vs; % output = measured input
+    % The value tau_s is updated as a function of vs.
+    tau_splus = measurement_times(j+1); % Timer tau_s
+    j_plus = j+1;
+    xplus = [msplus; j_plus; tau_splus];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D(x, vs) 
+    % Jump set indicator function for network
+    tau_s = x(end); % timer state
+
+    if tau_s>=0
+        inD = 0; % do not report jump
+    elseif tau_s<= 0
+        inD = 1; % report jump
+    else
+        inD = 0;
+    end
+end
+
+</pre>
+   <p>
+    <h3>
+     Estimator:
+    </h3>
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xdot = f(x, v, parameters)
+    % Estimator flow map for Estimation over a network
+    A = parameters.A;
+    B = parameters.B;
+    n = length(A);
+    u = v(end);
+    z = x(1:n);
+    jdot = 0;
+    zdot = A*z + B*u;
+    xdot = [zdot; jdot];
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C(x, v) 
+    % Estimator flow set for Estimation over a network
+    j = x(end); % internal communication memory event
+    jnet = v(end-2); % communication event
+
+    if j == jnet
+        inC = 1; % report flow
+    else
+        inC = 0;
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xplus = g(x, v, parameters)
+    % Estimator jump map for Estimation over a network
+    A = parameters.A;
+    M = parameters.M;
+    L = parameters.L;
+
+    n = length(A);
+    z = x(1:n);
+    jnet = v(end-2); % communication event
+    y = v(1:end-3);
+
+    jplus = jnet;
+    zplus = z + L*(y-M*z);
+    xplus = [zplus; jplus];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D(x, v) 
+    % Estimator jump set for Estimation over a network
+    j = x(end); % internal communication memory event
+    jnet = v(end-2); % communication event
+
+    if j ~= jnet
+        inD = 1; % report jump
+    else
+        inD = 0;
+    end
+end
+
+</pre>
+   <h2 id="6">
+    Example Output
+   </h2>
+   <p>
+    The solution to the estimation over network system from
+    \(z(0,0)=[1, 0.1, 1, 0.6]^\top, \hat{z}(0,0)=[-10, 0.5, 0, 0, 0]^\top\)
+    , u(t)=50*sin(0.1*t),and with
+    <tt>T=30</tt>
+    ,
+    <tt>J=100</tt>
+    ,
+    <tt>rule=1</tt>
+    shows that the estimated state approaches the system's state before
+    \(t = T\)
+    , with a small error.
+   </p>
+   <img alt="" hspace="5" src="/images/Example_network_estimation_02.png" vspace="5"/>
+   <h2 id="8">
+    References
+   </h2>
+   <p>
+    [1] F. Ferrante, F. Gouaisbaut, R. G. Sanfelice, and S. Tarbouriech. State estimation of linear systems in the presence of sporadic measurements. Automatica, 73:101–109, November 2016.
+   </p>
+  </div>
+ </body>
+</html>{% endraw %}

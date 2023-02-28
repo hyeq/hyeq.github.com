@@ -1,0 +1,265 @@
+---
+layout: single
+title: |
+    CPS Component: Zero-Order Hold (ZOH)
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    A zero-order hold (ZOH) converts a digital signal at its input into an analog signal at its output. Its output is updated at discrete time instants, typically periodically, and held constant in between updates, until new information is available at the next sampling time. In this example, a ZOH model is modeled in Simulink as a hybrid system with an input, where the input is the signal to sample.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Steps to Run Model
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#6">
+       Example Output
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the package
+    <tt>hybrid.examples.zero_order_hold</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="matlab:open('hybrid.examples.zero_order_hold.initialize')">
+       initialize.m
+      </a>
+     </li>
+     <li>
+      <a href="matlab:hybrid.examples.zero_order_hold.zoh">
+       zoh.slx
+      </a>
+     </li>
+     <li>
+      <a href="matlab:open('hybrid.examples.zero_order_hold.postprocess')">
+       postprocess.m
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples','+hybrid','+examples','+zero_order_hold'))">
+     <tt>Examples\+hybrid\+examples\zero_order_hold</tt>
+    </a>
+    (clicking this link changes your working directory).
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    The ZOH system is modeled as a hybrid system with the following data:
+   </p>
+   <p>
+    <img alt="$$\begin{array}{ll}
+f(q,u):=\left[\begin{array}{c}
+  0 \\
+  0 \\
+  1
+ \end{array}\right],
+   & C := \{ (x,u) \mid \tau\in [0, T^{*}_{s}] \} \\ \\
+g(x,u):= \left[ \begin{array}{c}
+                   u \\
+                   0
+               \end{array}\right],
+   & D: = \{ (x,u) \mid \tau_{s} \geq T^{*}_{s}\}
+\end{array}$$" src="/images/CPS_zero_order_hold_eq02589039645434562024.png" style="width:289px;height:106px;"/>
+   </p>
+   <p>
+    <img alt="$$
+  y = h(x) := x
+$$" src="/images/CPS_zero_order_hold_eq09792175221552868309.png" style="width:86px;height:15px;"/>
+   </p>
+   <p>
+    where the input and the state are given by
+    \(u \in \mathbb{R}^{2}\)
+    , and
+    \(x = (m_{s}, \tau_{s})\in \mathbb{R}\times \mathbb{R}^{2}\)
+    , respectively.
+   </p>
+   <h2 id="3">
+    Steps to Run Model
+   </h2>
+   <p>
+    The following procedure is used to simulate this example using the model in the file
+    <tt>zoh.slx</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      Open
+      <a href="matlab:hybrid.examples.zero_order_hold.zoh">
+       <tt>zoh.slx</tt>
+      </a>
+      in Simulink (clicking this link changes your working directory and opens the model).
+     </li>
+     <li>
+      Double-click the block labeled
+      <i>
+       Double Click to Initialize
+      </i>
+      .
+     </li>
+     <li>
+      To start the simulation, click the
+      <i>
+       run
+      </i>
+      button or select
+      <tt>Simulation>Run</tt>
+      .
+     </li>
+     <li>
+      Once the simulation finishes, click the block labeled
+      <i>
+       Double Click to Plot Solutions
+      </i>
+      . Several plots of the computed solution will open.
+     </li>
+    </ul>
+   </div>
+   <h2 id="4">
+    Simulink Model
+   </h2>
+   <p>
+    The following diagram shows the Simulink model of the ZOH. When the Simulink model is open, the blocks can be viewed and modified by double clicking on them. To look inside the ZOH block, click the down arrow in the lower-left corner of the block or open the block's context menu and select Mask > Look under mask.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_zero_order_hold_01.png" vspace="5"/>
+   <p>
+    The functions used to define
+    \((f, g, C, D)\)
+    within the ZOH block are included below.
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xdot = f(x, vs)
+    % Flow map for zero-order hold.
+    tau_dot = 1; 
+    xdot = zeros(size(x)); % All entries zero, except tau_dot
+    xdot(end) = tau_dot;
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C(x, vs, sample_time) 
+    % Flow set indicator function zero-order hold.
+    tau = x(end); % Timer state
+    if tau>=0 && tau <= sample_time
+        inC = 1; % report flow
+    elseif tau > sample_time
+        inC = 0; % do not report flow
+    else
+        inC = 0;
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xplus = g(x, vs)
+    % Jump map for zero-order hold.
+    msplus = vs; % output = measured input
+    tau_splus = 0; % Timer tau_s
+    xplus = [msplus; tau_splus];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D(x, vs, sample_time) 
+    % Jump set indicator function for zero-order hold.
+    tau_s = x(end); % timer state
+    if tau_s>=0 && tau_s<= sample_time
+        inD = 0; % do not report jump
+    elseif tau_s> sample_time
+        inD = 1; % report jump
+    else
+        inD = 0;
+    end
+end
+
+</pre>
+   <h2 id="6">
+    Example Output
+   </h2>
+   <p>
+    In this example, a signal is generated by the
+    <a href="/Example_1_3">bouncing ball system</a>
+    with the height of the platorm chosen to be constant, equal to
+    \(0.2\)
+    . The signal is then passed through a ZOH block. The initial state of the bouncing ball system is
+    \([1, 0]^\top\)
+    . The solution to the ZOH system from
+    \(x(0,0)=[1, 0, 0]^\top\)
+    and with
+    <tt>T=10</tt>
+    ,
+    <tt>J=100</tt>
+    ,
+    <tt>rule=1</tt>
+    shows the output signal after the ZOH process.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_zero_order_hold_02.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

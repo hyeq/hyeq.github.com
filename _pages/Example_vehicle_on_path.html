@@ -1,0 +1,289 @@
+---
+layout: single
+title: |
+    Example 1: Vehicle on Path with Boundaries
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In this example, a vehicle is controlled such that it moves along a path.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#3">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#5">
+       Example Output
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the
+    <a href="/MATLAB_packages">package</a>
+    <tt>hybrid.examples.vehicle_on_constrained_path</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="matlab:open('hybrid.examples.vehicle_on_constrained_path.initialize')">
+       initialize.m
+      </a>
+     </li>
+     <li>
+      <a href="matlab:hybrid.examples.vehicle_on_constrained_path.vehicle_on_path">
+       vehicle_on_path.slx
+      </a>
+     </li>
+     <li>
+      <a href="matlab:open('hybrid.examples.vehicle_on_constrained_path.postprocess')">
+       postprocess.m
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples','+hybrid','+examples','+vehicle_on_constrained_path'))">
+     <tt>Examples\+hybrid\+examples\vehicle_on_constrained_path</tt>
+    </a>
+    (clicking this link changes your working directory).
+   </p>
+   <p>
+    Consider a vehicle modeled by a Dubins vehicle model with state vector
+    \(x=[\xi_1, \xi_2, \xi_3]^\top\)
+    and with dynamics given by
+    \(\dot{\xi_1}=u\cos{\xi_3}\)
+    ,
+    \(\dot{\xi_2}=u\sin{\xi_3}\)
+    , and
+    \(\dot{\xi_3}=-\xi_3+r(q)\)
+    . The input
+    \(u\)
+    is the tangential velocity of the vehicle,
+    \(\xi_1\)
+    and
+    \(\xi_2\)
+    describe the vehicle's position on the plane, and
+    \(\xi_3\)
+    is the vehicle's orientation angle. Also consider a switching controller attempting to keep the vehicle inside the boundaries of a track given by
+    \(\{(\xi_1,\xi_2):-1\leq\xi_1\leq1\}\)
+    . A state
+    \(q \in \{1,2\}\)
+    is used to define the modes of operation of the controller. When
+    \(q=1\)
+    , the vehicle is traveling to the left, and when
+    \(q=2\)
+    , the vehicle is traveling to the right. A logic variable
+    \(r\)
+    is defined in order to steer the vehicle back inside the boundary. The state of the closed-loop system is given by
+    \(x := [\xi^\top\ q]^\top\)
+    .
+   </p>
+   <h2 id="3">
+    Mathematical Model
+   </h2>
+   <p>
+    A model of such a closed-loop system is given by
+   </p>
+   <p>
+    <img alt="$$ \begin{array}{l}
+f(x,u) := \left[\begin{array}{c}
+   u\cos(\xi_3) \\
+   u\sin(\xi_3)\\
+   -\xi_3+r(q) \\
+   0
+\end{array}\right] +
+\left[\begin{array}{c}
+  0 \\ 0 \\ 0 \\ 1
+\end{array}\right] u, \quad
+r(q) := \left\{\begin{array}{cc}
+  \frac{3\pi}{4} & \textrm{if } q=1 \\
+  \frac{\pi}{4} & \textrm{if } q=2 \\
+\end{array}\right. \\ \\
+C := \{(\xi, q, u)\in \mathbf{R}^{3}\times\{1,2\}\times \mathbf{R}\mid (\xi_1 \leq 1,\ q = 2) \textrm{ or } (\xi_1 \geq -1,\ q=1)\},
+\\ \\
+g(x,u) :=
+\left\{\begin{array}{ll}
+  \left[\begin{array}{c}
+    \xi \\ 2
+  \end{array}\right]
+  & \textrm{if } \xi_1\leq-1,\ q=1 \\ \\
+  \left[\begin{array}{c}
+    \xi \\ 1
+  \end{array}\right]
+  & \textrm{if } \xi_1\geq 1,\ q=2,
+\end{array} \right.
+\\ \\
+D := \{(\xi, q, u)\in \mathbf{R}^{3}\times\{1,2\} \times \mathbf{R}
+                 \mid(\xi_1 \geq 1,\  q = 2) \textrm{ or } (\xi_1 \leq -1,\  q=1)\}
+\end{array}$$" src="/images/Example_vehicle_on_path_eq05194059885568694630.png" style="width:459px;height:246px;"/>
+   </p>
+   <h2 id="4">
+    Simulink Model
+   </h2>
+   <p>
+    The Simulink blocks for the hybrid system in this example are included below.
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xdot = f(x, u)
+    % Flow map for Vehicle Traveling on a Track
+
+    % State
+    xi3 = x(3); % Orientation angle
+    q = x(4);       
+
+    % q = 1 --> going left
+    % q = 2 --> going right
+    if q == 1
+        r = 3*pi/4;
+    elseif q == 2
+        r = pi/4;
+    else
+        r = 0;
+    end
+
+    xi1dot = u*cos(xi3);  % Tangential velocity in x-direction
+    xi2dot = u*sin(xi3);  % Tangential velocity in y-direction
+    xi3dot = -xi3 + r;    % Angular velocity
+    qdot = 0;
+
+    xdot = [xi1dot; xi2dot; xi3dot; qdot];
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C(x, u) 
+    % Flow set for Vehicle Traveling on a Track
+
+    % State
+    xi1 = x(1);      %x-position
+    q = x(4);  
+
+    % q = 1 --> going left
+    % q = 2 --> going right
+    if ((xi1 < 1) && (q == 2)) || ((xi1 > -1) && (q == 1))  % flow condition
+        inC = 1;  % report flow
+    else 
+        inC = 0;   % do not report flow
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xplus = g(x, u)
+    % Jump map for Vehicle Traveling on a Track
+
+    % State
+    xi = x(1:3);
+
+    % q = 1 --> going left
+    % q = 2 --> going right
+    q = x(4);  
+
+    if ((xi(1) >= 1) && (q == 2)) || ((xi(1) <= -1) && (q == 1))
+       qplus = 3-q;
+    else
+        qplus = q;
+    end
+
+    xplus = [xi; qplus];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D(x, u)
+    % Jump set indicator function for Vehicle Traveling on a Track
+
+    % State
+    xi1 = x(1);      %x-position
+
+    % q = 1 --> going left
+    % q = 2 --> going right
+    q = x(4);
+
+    if ((xi1 >= 1) && (q == 2)) || ((xi1 <= -1) && (q == 1))  % jump condition
+        inD = 1;  % report jump
+    else
+        inD = 0; % do not report jump
+    end
+end
+
+</pre>
+   <h2 id="5">
+    Example Output
+   </h2>
+   <p>
+    A solution to the system above is plotted below with initial position
+    \((\xi_1,\xi_2)=(0,0)\)
+    , initial orientation angle
+    \(\xi_3=\frac{\pi}{4}\)
+    radians,
+    <tt>T=15</tt>
+    ,
+    <tt>J=10</tt>
+    , and
+    <tt>rule=1</tt>
+    .
+   </p>
+   <img alt="" hspace="5" src="/images/Example_vehicle_on_path_01.png" vspace="5"/>
+   <p>
+    The following plot depicts the trajectory of the vehicle.
+   </p>
+   <img alt="" hspace="5" src="/images/Example_vehicle_on_path_02.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

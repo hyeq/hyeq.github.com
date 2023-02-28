@@ -1,0 +1,483 @@
+---
+layout: single
+title: |
+    Composing Multiple Hybrid Subsystems (Bouncing Ball on Moving Platform)
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    In this example, a ball bouncing on a moving platform is modeled in Simulink as a pair of interconnected hybrid systems with inputs.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#6">
+       Example Output
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the
+    <a href="/MATLAB_packages">package</a>
+    <tt>hybrid.examples.coupled_subsystems</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <a href="matlab:open('hybrid.examples.coupled_subsystems.initialize')">
+       initialize.m
+      </a>
+     </li>
+     <li>
+      <a href="matlab:hybrid.examples.coupled_subsystems.coupled">
+       coupled.slx
+      </a>
+     </li>
+     <li>
+      <a href="matlab:open('hybrid.examples.coupled_subsystems.postprocess')">
+       postprocess.m
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <a href="matlab:cd(hybrid.getFolderLocation('Examples','+hybrid','+examples','+coupled_subsystems'))">
+     <tt>Examples\+hybrid\+examples\coupled_subsystems</tt>
+    </a>
+    (clicking this link changes your working directory).
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    Consider a bouncing ball
+    \(\mathcal{H}_1\)
+    bouncing on a moving platform
+    \(\mathcal{H}_2\)
+    . The ball accelerates due to gravity and both the ball and platform have discrete changes in velocity due to collisions between them. This problem lends itself to being modeled by a pair of interconnected hybrid systems because the states of each system affect the behavior of the other system. In this interconnection, the bouncing ball will contact the platform, bounce back up, and pushing the platform toward the ground. In order to model this system, the output of the bouncing ball becomes the input of the moving platform, and vice versa. The model includes disturbances to the velocities of the ball and platform.
+   </p>
+   <p>
+    The bouncing ball is modeled as a hybrid subsystem
+    \(\mathcal{H}_1\)
+    with
+   </p>
+   <div>
+    <ul>
+     <li>
+      state
+      \(\xi = [\xi_1 ,\xi_2]^\top\)
+      where
+      \(\xi_1\)
+      is the height of the ball and
+      \(\xi_2\)
+      is its velocity,
+     </li>
+     <li>
+      output
+      \(y_1 \in \mathbb{R}\)
+      , which is set to the height of the ball,
+     </li>
+     <li>
+      inputs
+      \(u_1 \in \mathbb{R}\)
+      , which is set to the height of the platform, and
+     </li>
+     <li>
+      disturbances
+      \(v_1 = [v_{11} , v_{12}]^\top \in \mathbb{R}^{2}\)
+      to the velocity of the ball during flows and jumps, respectively.
+     </li>
+    </ul>
+   </div>
+   <p>
+    The model of
+    \(\mathcal{H}_1\)
+    is then given as
+   </p>
+   <p>
+    <img alt="$$
+\left\{\begin{array}{ll}
+f_1(\xi, u_1,v_1):=\left[\begin{array}{c}
+   \xi_2 \\
+   -\gamma + v_{11}
+ \end{array}\right],
+& C_1 : = \{(\xi,u_1) \mid \xi_1 \geq u_1, u_1 \geq 0\}
+\\ \\
+g_1(\xi, u_1, v_1):=\left[\begin{array}{c}
+   \xi_1 \\
+   \lambda|\xi_2| + v_{12}
+\end{array}\right],
+     &D_1: =\{(\xi,u_1) \mid \xi_1 =u_1, u_1 \geq 0\},
+\\ \\
+y_1 = h_1(\xi) := \xi_1
+\end{array}\right.
+$$" src="/images/Help_coupled_subsystems_eq03861825465670706480.png" style="width:434px;height:124px;"/>
+   </p>
+   <p>
+    where
+    \(\gamma>0\)
+    is the acceleration due to gravity, and
+    \(\lambda \in [0,1)\)
+    is the cofficient of restitution for collisions between the ball and the platform.
+   </p>
+   <p>
+    The platform is modeled as a hybrid subsystem
+    \(\mathcal{H}_2\)
+    with
+   </p>
+   <div>
+    <ul>
+     <li>
+      state
+      \(\eta = [\eta_1 , \eta_2]^\top \in \mathbb{R}^{2}\)
+      where
+      \(\eta_1\)
+      is the height of the platform and
+      \(\eta_2\)
+      is its velocity,
+     </li>
+     <li>
+      output
+      \(y_2 \in \mathbb{R}\)
+      is set to the height of the platform,
+     </li>
+     <li>
+      intput
+      \(u_2 \in \mathbb{R}\)
+      is set to the height of the ball, and
+     </li>
+     <li>
+      disturbances
+      \(v_2 = [v_{21} , v_{22}]^\top \in \mathbb{R}^{2}\)
+      to velocity of the platform during flows and jumps, respecitvely.
+     </li>
+    </ul>
+   </div>
+   <p>
+    The model of the platform system
+    \(\mathcal{H}_2\)
+    is given by
+   </p>
+   <p>
+    <img alt="$$\left\{\begin{array}{ll}
+f_2(\eta,u_2,v_2):=\left[\begin{array}{c}
+   \eta_2 \\
+   -\eta_1-\beta\eta_2 +v_{12}
+ \end{array} \right],
+   & C_2 : = \{(\eta,u_2) \mid \eta_1 \leq u_2, \eta_1 \geq 0\}
+ \\ \\
+g_2(\eta,u_2,v_2):=\left[\begin{array}{c}
+   \eta_1 \\
+   -\lambda|\eta_2| + v_{22}
+\end{array} \right],
+   & D_2: =\{(\eta,u_2) \mid \eta_1 = u_2, \eta_1 \geq 0 \},
+ \\ \\
+y_2 = h_2(\eta) := \eta_1,
+\end{array}\right.$$" src="/images/Help_coupled_subsystems_eq10966466144066441288.png" style="width:472px;height:124px;"/>
+   </p>
+   <p>
+    where
+    \(\beta \geq 0\)
+    is a velocity damping coefficient.
+   </p>
+   <p>
+    The interconnection between
+    \(\mathcal H_1\)
+    and
+    \(\mathcal H_2\)
+    is defined by the input assignment
+   </p>
+   <p>
+    <img alt="$$u_1 = y_2, \quad u_2 = y_1.$$" src="/images/Help_coupled_subsystems_eq04663545683179336162.png" style="width:118px;height:10px;"/>
+   </p>
+   <p>
+    The signals
+    \(v_1\)
+    and
+    \(v_2\)
+    are included as external inputs to the model to simulate the effects of environmental perturbations, such as a wind gust, on the system.
+   </p>
+   <h2 id="3">
+    Simulink Model
+   </h2>
+   <p>
+    The following diagram shows the Simulink model for the interconnected hybrid systems. The contents of the blocks
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    ,
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    , etc., are shown below.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_coupled_subsystems_01.png" vspace="5"/>
+   <p>
+    <b>
+     The Simulink blocks for the bouncing ball
+     \(\mathcal{H}_{1}\)
+     :
+    </b>
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xi_dot = f1(xi, u)
+    % Flow map for ball in Example 1.6
+
+    % Magnitude of acceleration due to gravity.
+    gravity = 0.8;
+    
+    % Input from disturbances.
+    v11 = u(2);
+    v12 = u(3);
+
+    % Flow map
+    xi1_dot = xi(2);
+    xi2_dot = -gravity + v11;
+
+    xi_dot = [xi1_dot; xi2_dot];
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C1(xi, u) 
+    % Flow set indicator for ball in Example 1.6
+
+    % Input from platform's output.
+    y21 = u(1); % Height of platform.
+
+    if (xi(1) >= y21 || xi(2) >= 0)
+        inC = 1; % report flow
+    else
+        inC = 0; % do not report flow
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xi_plus = g1(xi, u)
+    % Jump map for ball in Example 1.6
+
+    % Constants
+    lambda = 0.8; % Coefficient of restitution.
+    
+    % Input from disturbances.
+    v11 = u(2);
+    v12 = u(3);
+
+    xi_plus = [xi(1); lambda*abs(xi(2)) + v12];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD = D1(xi, u) 
+    % Jump set indicator function for ball in Example 1.6
+
+    % Input from platform's output.
+    y21 = u(1); % Height of platform.
+
+    if (xi(1) <= y21 && xi(2) <= 0)
+        inD = 1; % report jump
+    else
+        inD = 0; % do not report jump
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     The Simulink blocks for the moving platform
+     \(\mathcal{H}_{2}\)
+     :
+    </b>
+   </p>
+   <p>
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function eta_dot = f2(eta, u)
+% Flow map for platform in Example 1.6.
+
+    % Constants
+    beta = 2; % Velocity damping coefficient.
+
+    % Input from disturbances.
+    v21 = u(2);
+    v22 = u(3);
+
+    % flow map
+    eta1_dot = eta(2);
+    eta2_dot = -eta(1)-beta*eta(2)+v21;
+
+    eta_dot = [eta1_dot; eta2_dot]; 
+end
+
+</pre>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C2(eta, u) 
+    % Flow set indicator function for platform in Example 1.6.
+
+    % Input from balls's output.
+    y1 = u(1); % Height of ball.
+    
+    if (eta(1) <= y1)
+        inC = 1;  % report flow
+    else
+        inC = 0;  % do not report flow
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function eta_plus = g2(eta, u)
+% Jump map for platform in Example 1.6.
+
+    % Constants
+    lambda  = 0.8; % Coefficient of bounce restitution.
+    
+    % Input from disturbances.
+    v21 = u(2);
+    v22 = u(3);
+
+    % Jump map
+    eta_plus = [eta(1); -lambda*abs(eta(2))+v22];
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D2(eta, u) 
+    % Jump set indicator function for platform in Example 1.6.
+
+    % Input from balls's output.
+    y1 = u(1); % Height of ball.
+
+    if (eta(1) >= y1)
+        inD = 1; % Report jump
+    else
+        inD = 0; % Do not report jump
+    end
+end
+
+</pre>
+   <h2 id="6">
+    Example Output
+   </h2>
+   <p>
+    A solution to the composition of
+    \(\mathcal{H}_1\)
+    and
+    \(\mathcal{H}_2\)
+    is shown below with
+    \(\gamma = 0.8\)
+    ,
+    \(\beta=2\)
+    ,
+    <tt>T=18</tt>
+    ,
+    <tt>J=20</tt>
+    , and
+    <tt>rule=1</tt>
+    . The inputs
+    \(v_{11}\)
+    ,
+    \(v_{12}\)
+    ,
+    \(v_{22}\)
+    are zero and
+    \(v_{21}\)
+    is a sinusoidal signal.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_coupled_subsystems_02.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}
