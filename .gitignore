@@ -1,6 +1,5 @@
 .idea/
 *_eq*.png
-vendor
 pages-tmp/
 
 # Vim
