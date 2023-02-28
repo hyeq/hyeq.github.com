@@ -1,0 +1,1 @@
+{"rule":"EN_UNPAIRED_BRACKETS","sentence":"^\\QIt's easy for people to understand \"4 out of 5” than \"80%\".\\E$"}

@@ -1,0 +1,28 @@
+# main links
+main:
+    # - title: "About"
+    #   url: /about
+    - title: MATLAB
+      url: /TOC_matlab
+    - title: Simulink
+      url: /TOC_simulink
+    - title: Examples
+      url: /TOC_examples
+    # - title: "LaTeX Macros"
+    #   url: /latex-macros/
+    # - title: "Writing Tips"
+    #   url: /writing-tips/
+   # - title: "Sitemap"
+   #   url: /sitemap/
+   # - title: Customization
+   #   children:
+   #     - title: "Configuration"
+   #       url: /docs/configuration/
+   #     - title: "Navigation"
+   #       url: /docs/navigation/
+   #     - title: "UI Text"
+   #       url: /docs/ui-text/
+   #     - title: "Authors"
+   #       url: /docs/authors/
+   #     - title: "Layouts"
+   #       url: /docs/layouts/
