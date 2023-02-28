@@ -13,23 +13,22 @@ title: |
     Following the model of a physical component
    </p>
    <p>
-    <img alt="$$\begin{array}{ll}
+    \[\begin{array}{ll}
 \dot{x} = f(x,u),
-      & C := \{ x \mid x \in \mathbf{R}^{n}\}, \\
+      & C := \{ x \mid x \in \mathbb{R}^{n}\}, \\
 x^+ = g(x) = \emptyset, \quad
       & D := \emptyset, \\
 y = h(x,u),
-\end{array}$$" src="/images/Example_4_0_eq13417556981831475295.png" style="width:244px;height:50px;"/>
+\end{array}\]
    </p>
    <p>
     a linear time-invariant model of the physical component is defined by
    </p>
    <p>
-    <img alt="$$
-\begin{array}{l}
+    \[\begin{array}{l}
 f(x,u) = f_P(x,u)= A_P x + B_P u, \\ h(x,u) = h(x,u) = M_P x + N_P u
 \end{array}
-$$" src="/images/Example_4_0_eq10475984638687094414.png" style="width:210px;height:33px;"/>
+\]
    </p>
    <p>
     where
@@ -49,11 +48,11 @@ $$" src="/images/Example_4_0_eq10475984638687094414.png" style="width:210px;heig
     has its components with norm less or equal than one is captured by
    </p>
    <p>
-    <img alt="$$\begin{array}{ll}
-C_P = \{(x,u)\in\mathbf{R}^{n_P}\times \mathbf{R}^{m_P}\mid x_i \geq 0 \ \forall i \in \{1,2,\ldots,n_P\}\}
-\\ \quad\qquad {} \cap \{(x,u)\in\mathbf{R}^{n_P}\times \mathbf{R}^{m_P} \mid |u_i| \leq 1 \  \forall i \in \{1,2,\ldots,m_P\}\}
+    \[\begin{array}{ll}
+C_P = \{(x,u)\in\mathbb{R}^{n_P}\times \mathbb{R}^{m_P}\mid x_i \geq 0 \ \forall i \in \{1,2,\ldots,n_P\}\}
+\\ \quad\qquad {} \cap \{(x,u)\in\mathbb{R}^{n_P}\times \mathbb{R}^{m_P} \mid |u_i| \leq 1 \  \forall i \in \{1,2,\ldots,m_P\}\}
 \end{array}
-$$" src="/images/Example_4_0_eq14562928516989809532.png" style="width:386px;height:33px;"/>
+\]
    </p>
    <p>
     For example, the evolution of the temperature of a room with a heater can be modeled by a linear-time invariant system with state
@@ -71,12 +70,11 @@ $$" src="/images/Example_4_0_eq14562928516989809532.png" style="width:386px;heig
     denotes the temperature outside the room. The evolution of the temperature is given by
    </p>
    <p>
-    <img alt="$$
-\begin{array}{l}
+    \[\begin{array}{l}
  \dot{x} = -x + [z_\Delta \quad 1] \left[\begin{array}{c} u_1 \\
-  u_2\end{array}\right] \textrm{ when } (x,u)\in C_P = \{(x,u) \in \mathbf{R} \times\mathbf{R}^2 \mid u_1 \in \{0,1\}\}
+  u_2\end{array}\right] \textrm{ when } (x,u)\in C_P = \{(x,u) \in \mathbb{R} \times\mathbb{R}^2 \mid u_1 \in \{0,1\}\}
 \end{array}
-$$" src="/images/Example_4_0_eq16656852043846947217.png" style="width:491px;height:36px;"/>
+\]
    </p>
    <p>
     where

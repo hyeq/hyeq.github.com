@@ -73,13 +73,12 @@ title: |
     . Among the many possible models available, we capture the dynamics of the physical components by using the hybrid systems framework by
    </p>
    <p>
-    <img alt="$$
-\begin{array}{ll}
-\dot{x} = f(x,u), & C := \mathbf{R}^n,\\
+    \[\begin{array}{ll}
+\dot{x} = f(x,u), & C := \mathbb{R}^n,\\
 x^+ = g(x) =\emptyset, &  D := \emptyset,\\
 y = h(x,u)
 \end{array}
-$$" src="/images/CPS_Components_eq08791831599613890444.png" style="width:167px;height:50px;"/>
+\]
    </p>
    <p>
     This model can be implemented with the Hybrid System with Inputs simulink block found
@@ -114,9 +113,8 @@ $$" src="/images/CPS_Components_eq08791831599613890444.png" style="width:167px;h
     . With these definitions, the general mathematical description of the cyber component is
    </p>
    <p>
-    <img alt="$$
-x_c^+ = G_c(x_c,v), \quad \zeta = \kappa(x_c,v)
-$$" src="/images/CPS_Components_eq17277649181308310463.png" style="width:186px;height:17px;"/>
+    \[x_c^+ = G_c(x_c,v), \quad \zeta = \kappa(x_c,v)
+\]
    </p>
    <p>
     In certain cases, it would be needed to impose restrictions on the state and inputs to the cyber component. Such conditions can be modeled imposing that
@@ -126,9 +124,8 @@ $$" src="/images/CPS_Components_eq17277649181308310463.png" style="width:186px;h
     belong to a subset of their state space, namely,
    </p>
    <p>
-    <img alt="$$
-(x_c,v) \in D_c \subset \Upsilon \times {\cal V}
-$$" src="/images/CPS_Components_eq14331370040663423664.png" style="width:132px;height:15px;"/>
+    \[(x_c,v) \in D_c \subset \Upsilon \times {\cal V}
+\]
    </p>
    <p>
     Next, we provide specific constructions of models of cyber components.
@@ -148,18 +145,16 @@ $$" src="/images/CPS_Components_eq14331370040663423664.png" style="width:132px;h
     . This mechanism can be captured by the difference equation
    </p>
    <p>
-    <img alt="$$
-  q^+ = \delta(q,v)  \qquad \zeta  = \kappa(q) \qquad (q,v) \in Q \times \Sigma
-$$" src="/images/CPS_Components_eq12525450632547038674.png" style="width:278px;height:17px;"/>
+    \[  q^+ = \delta(q,v)  \qquad \zeta  = \kappa(q) \qquad (q,v) \in Q \times \Sigma
+\]
    </p>
    <p>
     This model captures the dynamics the model of the cyber components given above with
    </p>
    <p>
-    <img alt="$$
-  x_c = q, \qquad \Upsilon = Q, \qquad
+    \[  x_c = q, \qquad \Upsilon = Q, \qquad
   {\cal V} = \Sigma, \qquad G_c = \delta, \qquad D_c = \Upsilon\times{\cal V}
-$$" src="/images/CPS_Components_eq14142544227403795678.png" style="width:385px;height:14px;"/>
+\]
    </p>
    <p>
     Note that there is no notion of ordinary time
@@ -203,8 +198,7 @@ $$" src="/images/CPS_Components_eq14142544227403795678.png" style="width:385px;h
     . The model of the sampling devices is
    </p>
    <p>
-    <img alt="$$
-\begin{array}{ll}
+    \[\begin{array}{ll}
   \left[\begin{array}{cc}
     \dot{\tau}_s, \\
     \dot{m}_s
@@ -224,7 +218,7 @@ $$" src="/images/CPS_Components_eq14142544227403795678.png" style="width:385px;h
   \end{array}\right]
   & \textrm{ when } \tau_s \geq T^*_s
 \end{array}
-$$" src="/images/CPS_Components_eq17569116120845131759.png" style="width:235px;height:71px;"/>
+\]
    </p>
    <p>
     In practice, there exists a time, usually called
@@ -274,8 +268,7 @@ $$" src="/images/CPS_Components_eq17569116120845131759.png" style="width:235px;h
     . A model that captures this mechanism is given by
    </p>
    <p>
-    <img alt="$$
-\begin{array}{ll}
+    \[\begin{array}{ll}
   \left[\begin{array}{cc}
       \dot{\tau}_h \\
       \dot{m}_h
@@ -296,7 +289,7 @@ $$" src="/images/CPS_Components_eq17569116120845131759.png" style="width:235px;h
   \end{array}\right]
 & \textrm{ when } \tau_h \leq T^{\textrm{min}}.
 \end{array}
-$$" src="/images/CPS_Components_eq17718625835034094995.png" style="width:288px;height:71px;"/>
+\]
    </p>
    <p>
     <b>
@@ -350,8 +343,7 @@ $$" src="/images/CPS_Components_eq17718625835034094995.png" style="width:288px;h
     gets updated and remains constant in-between events. A mathematical model capturing the said mechanism is given by
    </p>
    <p>
-    <img alt="$$
-\begin{array}{ll}
+    \[\begin{array}{ll}
   \left[\begin{array}{c}
     \dot{\tau}_N \\
     \dot{m}_N \\
@@ -375,7 +367,7 @@ $$" src="/images/CPS_Components_eq17718625835034094995.png" style="width:288px;h
     \end{array}\right]
   \end{array}\right. &  \textrm{ when } \tau_N \leq 0
 \end{array}
-$$" src="/images/CPS_Components_eq01081632803487820083.png" style="width:322px;height:125px;"/>
+\]
    </p>
    <p>
     Note that the update law for

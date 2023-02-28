@@ -115,27 +115,19 @@ title: |
     are
    </p>
    <p>
-    <img alt="$$ \left\{\begin{array}{ll}
+    \[ \left\{\begin{array}{ll}
    \dot{x}_1 = f_1(x_1, u_{C1}, t, j_1) &(x_1, u_{C1}, t, j_1) \in C_1 \\
    x_1^+ = g_1(x_1, u_{D1}, t, j_1) &(x_1, u_{D1}, t, j_1) \in D_1
-\end{array} \right. \quad $$ and
-$$ \quad \left\{\begin{array}{ll}
-   \dot{x}_2 = f_2(x_2, u_{C2}, t, j_2) &(x_2, u_{C2}, t, j_2) \in C_2 \\
-   x_2^+ = g_2(x_2, u_{D2}, t, j_2) &(x_2, u_{D2}, t, j_2) \in D_2.
-\end{array}. \right. $$" src="/images/CompositeHybridSystem_demo_eq15091468744987222659.png" style="width:664px;height:36px;"/>
+\end{array} \right. \quad \]
    </p>
    <p>
     Each subsystem also has output values
    </p>
    <p>
-    <img alt="$$ \left\{\begin{array}{l}
+    \[ \left\{\begin{array}{l}
    y_{C1} = h_{C1}(x_1, u_{C1}, t, j_1) \\
    y_{D1} = h_{D1}(x_1, u_{D1}, t, j_1)
-\end{array} \right. \quad $$ and $$ \quad
- \left\{\begin{array}{l}
-   y_{C2} = h_{C1}(x_2, u_{C2}, t, j_2)  \\
-   y_{D2} = h_{D2}(x_2, u_{D2}, t, j_2) .
-\end{array} \right. $$" src="/images/CompositeHybridSystem_demo_eq12236534586753419326.png" style="width:410px;height:36px;"/>
+\end{array} \right. \quad \]
    </p>
    <p>
     Note that
@@ -158,12 +150,9 @@ $$ \quad \left\{\begin{array}{ll}
     we choose the inputs
    </p>
    <p>
-    <img alt="$$ \left\{\begin{array}{l}
+    \[ \left\{\begin{array}{l}
   u_{C1} = \kappa_{1C}(y_{C1}, y_{C2}, t, j_1) \\
-  u_{D1} = \kappa_{1D}(y_{D1}, y_{D2}, t, j_1)\end{array}\right.\quad $$ and
-$$ \quad \left\{\begin{array}{l}
-  u_{C2} = \kappa_{2C}(y_{C1}, y_{C2}, t, j_2) \\
-  u_{D2} = \kappa_{2D}(y_{D1}, y_{D2}, t, j_2)\end{array}.\right.$$" src="/images/CompositeHybridSystem_demo_eq18350766778839569292.png" style="width:433px;height:36px;"/>
+  u_{D1} = \kappa_{1D}(y_{D1}, y_{D2}, t, j_1)\end{array}\right.\quad \]
    </p>
    <p>
     We define the system
@@ -197,11 +186,11 @@ $$ \quad \left\{\begin{array}{l}
     . The flow map is
    </p>
    <p>
-    <img alt="$$ \dot{\tilde{x}} = \tilde{f}(\tilde x):= \left[\begin{array}{c}
+    \[ \dot{\tilde{x}} = \tilde{f}(\tilde x):= \left[\begin{array}{c}
       f_1(x_1, u_{1C}, t, j_1) \\
       f_2(x_2, _{2C}, t, j_2) \\
       0 \\
-      0 \end{array}\right].$$" src="/images/CompositeHybridSystem_demo_eq05518698054412584854.png" style="width:218px;height:71px;"/>
+      0 \end{array}\right].\]
    </p>
    <p>
     The jump map depends on whether
@@ -215,11 +204,11 @@ $$ \quad \left\{\begin{array}{l}
     then
    </p>
    <p>
-    <img alt="$$\tilde x^+ = \tilde{g}_1(\tilde x):= \left[\begin{array}{c}
+    \[\tilde x^+ = \tilde{g}_1(\tilde x):= \left[\begin{array}{c}
       g_1(x_1, u_{1D}, t, j_1) \\
       x_2 \\
       j_1 + 1 \\
-      j_2 \end{array}\right],$$" src="/images/CompositeHybridSystem_demo_eq02423307098297218951.png" style="width:231px;height:71px;"/>
+      j_2 \end{array}\right],\]
    </p>
    <p>
     if
@@ -227,11 +216,11 @@ $$ \quad \left\{\begin{array}{l}
     then
    </p>
    <p>
-    <img alt="$$\tilde x^+ = \tilde{g}_2(\tilde x):= \left[\begin{array}{c}
+    \[\tilde x^+ = \tilde{g}_2(\tilde x):= \left[\begin{array}{c}
       x_1 \\
       g_2(x_2, u_{2D}, t, j_2) \\
       j_1 \\
-      j_2 + 1 \end{array}\right],$$" src="/images/CompositeHybridSystem_demo_eq02166612184183800394.png" style="width:231px;height:71px;"/>
+      j_2 + 1 \end{array}\right],\]
    </p>
    <p>
     and if
@@ -239,11 +228,11 @@ $$ \quad \left\{\begin{array}{l}
     then
    </p>
    <p>
-    <img alt="$$\tilde x^+ = \tilde{g}_2(\tilde x):= \left[\begin{array}{c}
+    \[\tilde x^+ = \tilde{g}_2(\tilde x):= \left[\begin{array}{c}
       g_1(x_1, u_{1D}, t, j_1) \\
       g_2(x_2, u_{2D}, t, j_2) \\
       j_1 + 1\\
-      j_2 + 1 \end{array}\right].$$" src="/images/CompositeHybridSystem_demo_eq00513400047599751574.png" style="width:231px;height:71px;"/>
+      j_2 + 1 \end{array}\right].\]
    </p>
    <h2 id="2">
     Outline of How To Create a Composite System
@@ -359,13 +348,13 @@ LinearContinuousSubsystem - Hybrid subsystems that have linear continuous dynami
     ). Mathematically, we write the hybrid subsystem as
    </p>
    <p>
-    <img alt="$$ \mathcal{H}_{\mathrm{BB}}:\left\{\begin{array}{ll}
+    \[ \mathcal{H}_{\mathrm{BB}}:\left\{\begin{array}{ll}
    \dot{x} = f_{\mathrm{BB}}(x) := \left[\matrix{x_2 \\ -\gamma}\right]
       & x \in C_{\mathrm{BB}} := \{(x_1, x_2) \in R^2 \mid x_1 \geq 0 \textrm{ or } x_2 \geq 0\} \\
    x^+ = g_{\mathrm{BB}}(x, u_{D}) := \left[\matrix{x_1 \\ -\lambda x_2}\right]
                                       + \left[\matrix{0 \\ 1}\right]u_D
       & x \in D_{\mathrm{BB}} := \{(x_1, x_2) \in R^2 \mid x_1 \leq 0, x_2 \leq 0\}
-\end{array} \right.$$" src="/images/CompositeHybridSystem_demo_eq06425935163702822408.png" style="width:611px;height:71px;"/>
+\end{array} \right.\]
    </p>
    <p>
     The bouncing ball subsystem is translated into MATLAB code as follows.
@@ -547,9 +536,9 @@ end
     be the desired period. Then, the dynamics of the controller are chosen to be
    </p>
    <p>
-    <img alt="$$\left\{ \begin{array}{ll} \left[\matrix{ \dot p \\ \dot \tau } \right] =
+    \[\left\{ \begin{array}{ll} \left[\matrix{ \dot p \\ \dot \tau } \right] =
 \left[\matrix{0 \\ 1}\right] & u \in C := \{0\} \\ \left[\matrix{p^+ \\ \tau^+ } \right] =
-\left[\matrix{\max\{0, p + (T-\tau)\} \\ 0}\right] & u \in D := \{1\} \end{array} \right. .$$" src="/images/CompositeHybridSystem_demo_eq06880824197062799771.png" style="width:338px;height:71px;"/>
+\left[\matrix{\max\{0, p + (T-\tau)\} \\ 0}\right] & u \in D := \{1\} \end{array} \right. .\]
    </p>
    <pre class="codeinput">target_period = 2.0;
 

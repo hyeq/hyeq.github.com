@@ -71,8 +71,7 @@ title: |
     is the vertical velocity. The ball can be modeled as the following hybrid system:
    </p>
    <p>
-    <img alt="$$
-\left\{\begin{array}{ll}
+    \[\left\{\begin{array}{ll}
     \left[\begin{array}{c} \dot x_1 \\ \dot x_2 \end{array}\right]
                    = \left[\begin{array}{c} x_2 \\ -\gamma \end{array}\right]
            & x \in C := \{ (x_1, x_2) \in R^2 \mid x_1 \geq 0 \textrm{ or } x_2 \geq 0 \}
@@ -81,7 +80,7 @@ title: |
                    = \left[\begin{array}{c} x_1 \\ -\lambda x_2 \end{array}\right]
            &x \in D := \{ (x_1, x_2) \in R^2 \mid x_1 \leq 0,\: x_2 \leq 0 \}
 \end{array} \right.
-$$" src="/images/HybridSystem_demo_eq01955370174982338042.png" style="width:438px;height:89px;"/>
+\]
    </p>
    <p>
     where
@@ -176,7 +175,7 @@ end
     and
    </p>
    <p>
-    <img alt="$$x = \left[\begin{array}{c} u, v \end{array}\right],$$" src="/images/HybridSystem_demo_eq09729852365959953811.png" style="width:83px;height:18px;"/>
+    \[x = \left[\begin{array}{c} u, v \end{array}\right],\]
    </p>
    <p>
     then we could define the following immutable properties:
@@ -709,7 +708,7 @@ hpb.color('red').legend('Modified').plotFlows(hybrid_arc)
     Suppose we want to compute the total energy of the bouncing ball:
    </p>
    <p>
-    <img alt="$$E(x) = \gamma x_1 + \frac{1}{2} x_2^2.$$" src="/images/HybridSystem_demo_eq14543380187058855037.png" style="width:120px;height:30px;"/>
+    \[E(x) = \gamma x_1 + \frac{1}{2} x_2^2.\]
    </p>
    <p>
     We can map the

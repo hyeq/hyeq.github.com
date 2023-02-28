@@ -83,12 +83,11 @@ title: |
     Consider a physical process given in terms of the state-space model
    </p>
    <p>
-    <img alt="$$
-\begin{array}{l}
+    \[\begin{array}{l}
 \dot{x}=A x,\\
 y= M x
 \end{array}
-$$" src="/images/Example_network_estimation_eq01189805027596277778.png" style="width:50px;height:32px;"/>
+\]
    </p>
    <p>
     where
@@ -113,17 +112,15 @@ $$" src="/images/Example_network_estimation_eq01189805027596277778.png" style="w
     a constant matrix to be designed, the estimation algorithm updates its state as follows
    </p>
    <p>
-    <img alt="$$
-\hat{x}^+=\hat{x}+L(y-M\hat{x})
-$$" src="/images/Example_network_estimation_eq03069945942094071498.png" style="width:133px;height:17px;"/>
+    \[\hat{x}^+=\hat{x}+L(y-M\hat{x})
+\]
    </p>
    <p>
     at every instant information is received. In between such events, the algorithm updates its state continuously so as to match the evolution of the state of the physical process, that is, via
    </p>
    <p>
-    <img alt="$$
-\dot{\hat{x}} = A \hat{x}
-$$" src="/images/Example_network_estimation_eq12294769281860018989.png" style="width:46px;height:14px;"/>
+    \[\dot{\hat{x}} = A \hat{x}
+\]
    </p>
    <p>
     Modeling the network as a hybrid system, which, in particular, assumes zero transmission delay, the state variables of the entire system are
@@ -139,9 +136,8 @@ $$" src="/images/Example_network_estimation_eq12294769281860018989.png" style="w
     , at which events the state of the network is updated via
    </p>
    <p>
-    <img alt="$$
-\tau_N^+ \in [T^{*\min}_{N},T^{*\max}_{N}],\quad j_N^+ = j_N+1, \qquad m_N^+ = y
-$$" src="/images/Example_network_estimation_eq18039343669185494715.png" style="width:306px;height:18px;"/>
+    \[\tau_N^+ \in [T^{*\min}_{N},T^{*\max}_{N}],\quad j_N^+ = j_N+1, \qquad m_N^+ = y
+\]
    </p>
    <p>
     and the state of the algorithm is updated via
@@ -149,17 +145,15 @@ $$" src="/images/Example_network_estimation_eq18039343669185494715.png" style="w
     . Note that since the state of the physical process does not change at such events, we can use the following trivial difference equation to update it at the network events:
    </p>
    <p>
-    <img alt="$$
-x^+ = x
-$$" src="/images/Example_network_estimation_eq11357611808412554880.png" style="width:44px;height:13px;"/>
+    \[x^+ = x
+\]
    </p>
    <p>
     In between events, the state of the network is updated as
    </p>
    <p>
-    <img alt="$$
-\dot{\tau}_N = -1, \qquad \dot{j}_N,\dot{m}_N = 0
-$$" src="/images/Example_network_estimation_eq00984683332065699108.png" style="width:163px;height:17px;"/>
+    \[\dot{\tau}_N = -1, \qquad \dot{j}_N,\dot{m}_N = 0
+\]
    </p>
    <p>
     the state of the algorithm changes continuously according to
@@ -174,19 +168,19 @@ $$" src="/images/Example_network_estimation_eq00984683332065699108.png" style="w
     </b>
    </p>
    <p>
-    <img alt="$$ \begin{array}{l@{}l}
+    \[ \begin{array}{l@{}l}
 f_P(x, u):= Ax + Bu, \quad
-   &C_P := \mathbf{R}^{n_p}\times\mathbf{R}, \\
+   &C_P := \mathbb{R}^{n_p}\times\mathbb{R}, \\
 G_P(x, u):= x, \quad
     &D_P := \emptyset,\\
 y = h(x) : =Mx
-\end{array}$$" src="/images/Example_network_estimation_eq11852906703054436761.png" style="width:251px;height:50px;"/>
+\end{array}\]
    </p>
    <p>
     where
    </p>
    <p>
-    <img alt="$$\begin{array}{l@{}l}
+    \[\begin{array}{l@{}l}
 A =
 \left[\begin{tabular}{cccc}
 0&1&0&0\\
@@ -196,7 +190,7 @@ A =
 \end{tabular}\right],\quad
 B = \left[\begin{tabular}{c} 0\\0\\1\\0 \end{tabular}\right],\quad
 M = \left[\begin{tabular}{cccc}1&0&0&0\end{tabular}\right],
-\end{array}$$" src="/images/Example_network_estimation_eq07197155437663834835.png" style="width:446px;height:71px;"/>
+\end{array}\]
    </p>
    <p>
     \(n_p=4\)
@@ -216,7 +210,7 @@ M = \left[\begin{tabular}{cccc}1&0&0&0\end{tabular}\right],
     </b>
    </p>
    <p>
-    <img alt="$$\begin{array}{l@{}l}
+    \(\begin{array}{l@{}l}
 f(x_N, u_N):= \left[\begin{tabular}{c}
 0\\0\\-1
 \end{tabular}\right],\quad
@@ -226,7 +220,7 @@ $u_N$ \\ $j_N +1$ \\  $\tau_r$
 \end{tabular}\right],\quad
     &D :=\{(x_N,u_N)\mid \tau_N \leq 0 \},\\
 y_N = h(x_N) : =x_N
-\end{array}$$" src="/images/Example_network_estimation_eq02174874160877729110.png" style="width:350px;height:122px;"/>
+\end{array}\)
    </p>
    <p>
     where
@@ -245,7 +239,7 @@ y_N = h(x_N) : =x_N
     </b>
    </p>
    <p>
-    <img alt="$$\begin{array}{ll}
+    \(\begin{array}{ll}
 f(x_E, u_E):=
 \left[\begin{tabular}{cc}
 $A$ &0 \\ 0 & 0
@@ -257,8 +251,8 @@ g((\hat{x},j_E), u_E):= \left[\begin{tabular}{c}
 $\hat{x} + L(m_N-M\hat{x})$\\
 $j_N$
 \end{tabular}\right],\quad
-    &D :=\{(x,u) \mid j_E\in\mathbf{N}\setminus j_N\},
-\end{array}$$" src="/images/Example_network_estimation_eq16041980566415392121.png" style="width:466px;height:71px;"/>
+    &D :=\{(x,u) \mid j_E\in\mathbb{N}\setminus j_N\},
+\end{array}\)
    </p>
    <p>
     where
@@ -266,11 +260,11 @@ $j_N$
     , which is designed as in [1], is given by
    </p>
    <p>
-    <img alt="$$\begin{array}{l}
+    \[\begin{array}{l}
 L := \left[\begin{tabular}{c}
 1 \\ -0.9433\\ -0.6773\\1.6274
 \end{tabular}\right],
-\end{array}$$" src="/images/Example_network_estimation_eq10415313450339739429.png" style="width:122px;height:71px;"/>
+\end{array}\]
    </p>
    <p>
     the input and the state are given by

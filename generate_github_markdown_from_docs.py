@@ -96,28 +96,26 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
             # For latex_inline_equation_pattern, we match "$<equation>$" but
             # not "$$<equation>$$". See https://stackoverflow.com/a/62020002/6651650.
             latex_inline_equation_pattern = r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)"
-            latex_block_equation_pattern = r"\$\$(.*?)\$\$"
+            latex_block_equation_pattern = r"\$\$\n*((?:.\n*)*?)\$\$"
             if alt_text:
-                is_equation = re.match(latex_inline_equation_pattern, alt_text)
-                if is_equation:
-                    block_eq_result = re.search(latex_block_equation_pattern, alt_text)
-                    inline_eq_result = re.search(latex_inline_equation_pattern, alt_text)
-                    if block_eq_result:
-                        equation = block_eq_result.group(1)
-                    elif inline_eq_result:
-                        equation = inline_eq_result.group(1)
-                    else:
-                        warnings.warn(f"No equation found in alt text: {alt_text}")
-                        continue
+                block_eq_result = re.search(latex_block_equation_pattern, alt_text, re.MULTILINE)
+                inline_eq_result = re.search(latex_inline_equation_pattern, alt_text, re.MULTILINE)
+                if block_eq_result:
+                    equation = block_eq_result.group(1)
+                elif inline_eq_result:
+                    equation = inline_eq_result.group(1)
+                else:
+                    warnings.warn(f"No equation found in alt text: {alt_text}")
+                    continue
 
-                    # alt_text = alt_text.replace('$', '')
-                    equation = equation.replace("\\mathbf{R}", "\\mathbb{R}")
-                    equation = equation.replace("\\mathbf{N}", "\\mathbb{N}")
+                # alt_text = alt_text.replace('$', '')
+                equation = equation.replace("\\mathbf{R}", "\\mathbb{R}")
+                equation = equation.replace("\\mathbf{N}", "\\mathbb{N}")
 
-                    if inline_eq_result:
-                        img_tag.replace_with(f"\\({equation}\\)")
-                    else:  # if block_eq_result:
-                        img_tag.replace_with(f"\\[{equation}\\]")
+                if inline_eq_result:
+                    img_tag.replace_with(f"\\({equation}\\)")
+                else:  # if block_eq_result:
+                    img_tag.replace_with(f"\\[{equation}\\]")
 
         # Convert image paths images into MathJax.
         for img_tag in soup.findAll('img'):

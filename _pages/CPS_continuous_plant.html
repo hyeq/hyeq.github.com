@@ -85,11 +85,11 @@ title: |
     be the orientation. The kinematics model is given by
    </p>
    <p>
-    <img alt="$$\begin{array}{ll}
+    \[\begin{array}{ll}
 \dot x_1 = v \sin x_3\\
 \dot x_2 = v \cos x_3\\
 \dot x_3 = u,
-\end{array}$$" src="/images/CPS_continuous_plant_eq12816612727749993333.png" style="width:79px;height:49px;"/>
+\end{array}\]
    </p>
    <p>
     where the forward velocity
@@ -103,13 +103,13 @@ title: |
     , respectively. We express this system as a hybrid control system with the following data:
    </p>
    <p>
-    <img alt="$$\begin{array}{ll}
+    \[\begin{array}{ll}
 f(x,u):=\left[\begin{array}{c}
    \sin x_{3} \\
    \cos x_{3} \\
    u
  \end{array}\right],
-   & C := \{ (x,u) \in \mathbf{R}^{3} \times \mathbf{R}
+   & C := \{ (x,u) \in \mathbb{R}^{3} \times \mathbb{R}
               \mid u \in [U_{\min},\ U_{\max}], x_1^2 + x_2^2 \leq X^2_{\max}\} \\ \\
 g(x,u):=\left[ \begin{array}{c}
                    0 \\
@@ -117,7 +117,7 @@ g(x,u):=\left[ \begin{array}{c}
                    0
                \end{array}\right],
    & D: = \emptyset
-\end{array}$$" src="/images/CPS_continuous_plant_eq11237353764497400843.png" style="width:530px;height:124px;"/>
+\end{array}\]
    </p>
    <h2 id="3">
     Simulink Model
