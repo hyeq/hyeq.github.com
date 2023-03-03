@@ -112,8 +112,13 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
 
         # Convert image paths images into MathJax.
         for img_tag in soup.findAll('img'):
-            src = '/images/' + img_tag.get('src')
-            img_tag['src'] = src
+            img_src:str = img_tag.get('src')
+            print(img_src)
+            if img_src.startswith('images/'):
+                img_src = '/' + img_src
+            else:
+                img_src = '/images/' + img_src
+            img_tag['src'] = img_src
 
         # Delete all comments, in particular the MATLAB source code for the documentation that was included at the end
         # of each HTML file (it was being displayed by GitHub).
