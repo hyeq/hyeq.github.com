@@ -4,6 +4,15 @@
   {% endfor %}
 {% else %}
   <script src="{{ '/assets/js/main.min.js' | relative_url }}"></script>
+  <link rel="stylesheet" href="/assets/css/mono-blue.min.css">
+  <script src="/assets/js/highlight.min.js"></script>
+  <script>
+    hljs.configure({
+      languages:["matlab"], // Assume all code is MATLAB.
+      cssSelector:'pre, code, tt' // Apply highlighting to pre, code, and tt elements.
+    });
+    hljs.highlightAll();
+  </script>
 {% endif %}
 
 {% if site.search == true or page.layout == "search" %}
