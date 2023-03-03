@@ -268,9 +268,7 @@ HybridPlotBuilder().subplots('on').plotPhase(sol)
     . To select particular components of
     <tt>hybrid_arc</tt>
     , call
-    <a href="matlab:doc('HybridArc.select')">
-     <tt>hybrid_arc.select(ndxs)</tt>
-    </a>
+    <tt>hybrid_arc.select(ndxs)</tt>
     where
     <tt>ndxs</tt>
     is a vector containing the indices of the components you wish to plot. Then, simply pass the output to one of the plotting functions. For example, to plot components 1 and 2, pass the array
@@ -318,9 +316,7 @@ ylabel('$x_1$')
     Alternatively, a function handle can be evaluated and plotted at each time step in a
     <tt>HybridArc</tt>
     . The evaluation of the function is done via
-    <a href="matlab:doc('HybridArc.evaluateFunction')">
-     <tt>HybridArc.evaluateFunction()</tt>
-    </a>
+    <tt>HybridArc.evaluateFunction()</tt>
     .
    </p>
    <pre class="codeinput">g = system.gamma; % gravity
@@ -625,9 +621,7 @@ pb.addLegendEntry(plt_handle, 'Circle');
     To set legend properties, such as location and orientation, pass the legend labels to
     <tt>HybridPlotBuilder.legend</tt>
     as a cell array (enclosed with braces '{}') and pass name/value pairs in subsequent arguments. See
-    <a href="matlab:doc('legend')">
-     <tt>doc('legend')</tt>
-    </a>
+    <tt>doc('legend')</tt>
     for a description of legend properties.
    </p>
    <pre class="codeinput">clf

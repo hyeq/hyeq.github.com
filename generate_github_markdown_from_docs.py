@@ -77,15 +77,8 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         # Translate each link from using calls to "matlab.internal.openHelp()"
         # to relative MediaWiki links.
         for link_tag in soup.findAll('a'):
-            href = link_tag.get('href')
-            regex_pattern = r"matlab:hybrid\.internal\.openHelp\('(.*?)(\.html)?'\)"
-            result = re.match(regex_pattern, href)
-            if result:
-                relative_url = result.group(1)
-                link_text = link_tag.string
-                # Update links to use relative links instead of MATLAB commands..
-                link_code = f"<a href=\"/{relative_url}\">{link_text}</a>"
-                link_tag.replace_with(link_code)
+            if not translate_matlab_links_to_help_into_standard_urls(link_tag):
+                scrub_remaining_matlab_links_to_help_into_standard_urls(link_tag)
 
         # Convert equation images into MathJax.
         # MATLAB stores the LaTeX equations used to generate equation images in the alt text,
@@ -122,7 +115,6 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
             src = '/images/' + img_tag.get('src')
             img_tag['src'] = src
 
-
         # Delete all comments, in particular the MATLAB source code for the documentation that was included at the end
         # of each HTML file (it was being displayed by GitHub).
         for element in soup(text=lambda text: isinstance(text, Comment)):
@@ -136,6 +128,26 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         outfile.write(soup.prettify(formatter=None))
         outfile.write("{% endraw %}\n")
         # print(f"Wrote output to {out_path}")
+
+
+def translate_matlab_links_to_help_into_standard_urls(link_tag):
+    href = link_tag.get('href')
+    regex_pattern = r"matlab:hybrid\.internal\.openHelp\('(.*?)(\.html)?'\)"
+    result = re.match(regex_pattern, href)
+    if result:
+        relative_url = result.group(1)
+        link_text = link_tag.string
+        # Update links to use relative links instead of MATLAB commands..
+        link_code = f"<a href=\"/{relative_url}\">{link_text}</a>"
+        link_tag.replace_with(link_code)
+        return True
+    return False
+
+
+def scrub_remaining_matlab_links_to_help_into_standard_urls(link_tag):
+    result = re.match(r"matlab:(.*?)", link_tag.get('href'))
+    if result:
+        link_tag.replaceWithChildren()
 
 
 main()

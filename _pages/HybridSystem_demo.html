@@ -91,11 +91,9 @@ title: |
    </p>
    <p>
     We define a MATLAB implementation of the bouncing ball in
-    <tt><a href="matlab:open('hybrid.examples.BouncingBall')">hybrid.examples.BouncingBall.m</a></tt>
+    <tt>hybrid.examples.BouncingBall.m</tt>
     . A script for running the bouncing ball example is provided at
-    <a href="matlab:open('hybrid.examples.run_bouncing_ball')">
-     <tt>hybrid.examples.run_bouncing_ball</tt>
-    </a>
+    <tt>hybrid.examples.run_bouncing_ball</tt>
     (the prefix
     <tt>hybrid.examples.</tt>
     indicates the
@@ -685,7 +683,7 @@ plotFlows(sol); % Display solution
     and
     <tt>restrictJ</tt>
     . See
-    <tt><a href="matlab:doc('HybridArc')">doc('HybridArc')</a></tt>
+    <tt>doc('HybridArc')</tt>
     for details.
    </p>
    <pre class="codeinput">hybrid_arc = sol.select(1);                   % Pick the 1st component.
@@ -837,9 +835,7 @@ config.priority('jump');
 </pre>
     <p>
      Most of the options for the builtin MATLAB ODE solvers (described
-     <a href="matlab:doc('odeset')">
-      here
-     </a>
+     here
      ) can be set within
      <tt>HybridSolverConfig</tt>
      . A list of supported functions is provided below. To set an ODE solver option, use the
@@ -900,7 +896,7 @@ config.ode_options
 </pre>
     <p>
      Some of the ODE solver options have not been tested with the hybrid equation solver. The following table lists all ODE solver options and information about whether the HyEQ solver supports each. For a description of each option, see
-     <tt><a href="matlab:doc('odeset')">doc('odeset')</a>.</tt>
+     <tt>doc('odeset').</tt>
     </p>
     <p>
      <table>
