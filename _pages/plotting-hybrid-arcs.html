@@ -1,0 +1,1152 @@
+---
+layout: single
+title: |
+    Plotting Hybrid Arcs
+category: matlab
+permalink: /matlab/plotting-hybrid-arcs
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    <meta category="matlab" id="github_pages" permalink="plotting-hybrid-arcs">
+    </meta>
+   </p>
+   <p>
+    In this document, we describe how to generate plots of
+    <tt>HybridArc</tt>
+    objects using
+    <tt>HybridPlotBuilder</tt>
+    .
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       Setup
+      </a>
+     </li>
+     <li>
+      <a href="#2">
+       Basic Plotting
+      </a>
+     </li>
+     <li>
+      <a href="#11">
+       Automatic Subplots
+      </a>
+     </li>
+     <li>
+      <a href="#14">
+       Choosing Components to Plot
+      </a>
+     </li>
+     <li>
+      <a href="#16">
+       Plotting Other Values
+      </a>
+     </li>
+     <li>
+      <a href="#19">
+       Customizing Plot Appearance
+      </a>
+     </li>
+     <li>
+      <a href="#26">
+       Titles, Labels, and Legends
+      </a>
+     </li>
+     <li>
+      <a href="#47">
+       Filtering Solutions
+      </a>
+     </li>
+     <li>
+      <a href="#50">
+       Replacing vs. Adding Plots to a Figure
+      </a>
+     </li>
+     <li>
+      <a href="#52">
+       Modifying Defaults
+      </a>
+     </li>
+     <li>
+      <a href="#56">
+       Additional Configuration
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    Setup
+   </h2>
+   <p>
+    First, we create several
+    <tt>HybridArc</tt>
+    solution objects to use as examples
+   </p>
+   <pre class="codeinput">import hybrid.examples.*
+config = HybridSolverConfig('Refine', 8); % 'Refine' option makes the plots smoother.
+system = BouncingBall();
+system_3D = Example3DHybridSystem();
+sol    = system.solve([10, 0], [0 30], [0 30], config);
+sol_3D = system_3D.solve([0; 1; 0], [0, 20], [0, 100], config);
+sol_8D = HybridArc(sol.t, sol.j, sol.x(:, 1)*(1:8));
+</pre>
+   <h2 id="2">
+    Basic Plotting
+   </h2>
+   <p>
+    The Hybrid Equations Toolbox provides two approaches to plotting hybrid solutions, depending the level of control required. The first approach, designed for quickly viewing solutions, is to pass a
+    <tt>HybridArc</tt>
+    object to
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    ,
+    <tt>plotHybrid</tt>
+    , or
+    <tt>plotPhase</tt>
+    . The
+    <tt>plotFlows</tt>
+    function plots each component of the solution versus discrete time
+    \(t\)
+    .
+   </p>
+   <pre class="codeinput">plotFlows(sol); % x vs. t
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_01.png" vspace="5"/>
+   <p>
+    The
+    <tt>plotJumps</tt>
+    function plots each component of the solution versus discrete time
+    \(j\)
+    .
+   </p>
+   <pre class="codeinput">plotJumps(sol); % x vs. j
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_02.png" vspace="5"/>
+   <p>
+    The
+    <tt>plotHybrid</tt>
+    function plots each component of the solution versus hybrid time
+    \((t, j)\)
+    .
+   </p>
+   <pre class="codeinput">plotHybrid(sol); % x vs. (t, j)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_03.png" vspace="5"/>
+   <p>
+    The
+    <tt>plotPhase</tt>
+    function plots a 2D or 3D solution vector
+    <tt>x</tt>
+    in phase space.
+   </p>
+   <pre class="codeinput">plotPhase(sol); % x1 vs. x2
+title('2D Phase Plot')
+snapnow; clf
+plotPhase(sol_3D)
+title('3D Phase Plot')
+view([63.6 28.2]) % Adjust the view angle.
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_04.png" vspace="5"/>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_05.png" vspace="5"/>
+   <p>
+    For solutions with four or less components,
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    ,
+    <tt>plotHybrid</tt>
+    plot each component in separate subplots, as shown above. Solutions with five or more components are plotted in a single subplot with each colors and a legend included to label each component.
+   </p>
+   <pre class="codeinput">plotFlows(sol_8D)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_06.png" vspace="5"/>
+   <p>
+    The second plotting approach is to use the
+    <tt>HybridPlotBuilder</tt>
+    class explicitly (the first approach also uses
+    <tt>HybridPlotBuilder</tt>
+    "under the hood" to draw plots). This approach allows for extensive customization and is therefore, better suited for creation of plots for publication. The remainder of this document discusses how to use the second approach. The first step is to create an instance of
+    <tt>HybridPlotBuilder</tt>
+    .
+   </p>
+   <pre class="codeinput">hpb = HybridPlotBuilder();
+</pre>
+   <p>
+    Properties are set by calling functions (described below) on the
+    <tt>HybridPlotBuilder</tt>
+    object.
+   </p>
+   <pre class="codeinput">hpb.flowColor('black'); % Set the flow color to black.
+</pre>
+   <p>
+    To create a plot, one of the plotting functions
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    ,
+    <tt>plotHybrid</tt>
+    , or
+    <tt>plotPhase</tt>
+    is called. Note that subplots are not created, by default.
+   </p>
+   <pre class="codeinput">hpb.plotFlows(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_07.png" vspace="5"/>
+   <p>
+    In MATLAB R2016a and later, if the plot builder is only used once, it can be used immediately without assigning it to a variable by
+    <i>
+     chaining
+    </i>
+    a series of function calls.
+   </p>
+   <pre class="language-matlab">HybridPlotBuilder().flowColor('black').plotFlows(sol);
+</pre>
+   <p>
+    Prior to MATLAB R2016a, function calls cannot be chained directly after a constructor, so the code above must be split into a variable assignment, followed by the function calls:
+   </p>
+   <pre class="language-matlab">hpb = HybridPlotBuilder();
+hpb.flowColor('black').plotFlows(sol);
+</pre>
+   <h2 id="11">
+    Automatic Subplots
+   </h2>
+   <p>
+    Automatic subplots can be enabled by calling
+    <tt>HybridPlotBuilder.subplots('on')</tt>
+    . When auto-subplots is
+    <tt>'on'</tt>
+    and
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    , or
+    <tt>plotHybrid</tt>
+    is called, then a subplot is created for each plotted state component. If, on the otherhand,
+    <tt>plotPhase</tt>
+    is called, then a single subplot is created. If the current figure did not, previously, have the correct number of subplots, then the figure is cleared before plotting.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder().subplots('on').plotFlows(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_08.png" vspace="5"/>
+   <p>
+    When auto-subplots is
+    <tt>'off'</tt>
+    , all plots are placed in the current axes (the default value is
+    <tt>'off'</tt>
+    ).
+   </p>
+   <pre class="codeinput">clf % clear figure. Otherwise previous subplots are reused.
+subplot(2, 1, 1)
+HybridPlotBuilder().subplots('off').plotFlows(sol_8D)
+subplot(2, 1, 2)
+HybridPlotBuilder().subplots('off').plotPhase(sol)
+axis padded
+axis equal
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_09.png" vspace="5"/>
+   <p>
+    At this point, if we call a plotting function with auto-subplots
+    <tt>'on'</tt>
+    , then the figure is reset to the correct number of subplots.
+   </p>
+   <pre class="codeinput">%    <- No 'clf' here.
+HybridPlotBuilder().subplots('on').plotPhase(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_10.png" vspace="5"/>
+   <h2 id="14">
+    Choosing Components to Plot
+   </h2>
+   <p>
+    Often, you may wish to plot only some of the components in a
+    <tt>HybridArc</tt>
+    object
+    <tt>hybrid_arc</tt>
+    . To select particular components of
+    <tt>hybrid_arc</tt>
+    , call
+    <tt>hybrid_arc.select(ndxs)</tt>
+    where
+    <tt>ndxs</tt>
+    is a vector containing the indices of the components you wish to plot. Then, simply pass the output to one of the plotting functions. For example, to plot components 1 and 2, pass the array
+    <tt>[1, 2]</tt>
+    or (equivalently)
+    <tt>1:2</tt>
+    to
+    <tt>select</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+plotPhase(sol_3D.select([1,2]));
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_11.png" vspace="5"/>
+   <p>
+    To switch the order of components in the plot, simply switch the order in the array. Note that the labels
+    \(x_1\)
+    and
+    \(x_2\)
+    do not update to reflect the switched order.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder().plotPhase(sol_3D.select([2,1]));
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_12.png" vspace="5"/>
+   <h2 id="16">
+    Plotting Other Values
+   </h2>
+   <p>
+    It is possible to plot values contained in an array while using the hybrid time domain from a given
+    <tt>HybridArc</tt>
+    . To accomplish this, pass a
+    <tt>HybridArc</tt>
+    object as the first argument to a plotting function and pass the array of values as the second argument. The number of rows in the values array must match the number of entries in
+    <tt>sol.t</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+height = sol.x(:, 1); % Extract height component
+HybridPlotBuilder().plotFlows(sol, -height) % Plot negative height
+title('Negative Height')
+ylabel('$x_1$')
+ylim padded
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_13.png" vspace="5"/>
+   <p>
+    Alternatively, a function handle can be evaluated and plotted at each time step in a
+    <tt>HybridArc</tt>
+    . The evaluation of the function is done via
+    <tt>HybridArc.evaluateFunction()</tt>
+    .
+   </p>
+   <pre class="codeinput">g = system.gamma; % gravity
+HybridPlotBuilder().plotFlows(sol, @(x) g*x(1) + 0.5*x(2)^2);
+title('Total Energy')
+ylabel('$E$')
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_14.png" vspace="5"/>
+   <p>
+    The function handle passed to plotting function must have the input arguments
+    <tt>@(x)</tt>
+    ,
+    <tt>@(x, t)</tt>
+    or
+    <tt>@(x, t, j)</tt>
+    and return a column vector.
+   </p>
+   <h2 id="19">
+    Customizing Plot Appearance
+   </h2>
+   <p>
+    The following functions modify the appearance of flows.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder()...
+    .flowColor('black')...
+    .flowLineWidth(2)...
+    .flowLineStyle(':')...
+    .plotFlows(sol.select(1))
+ylim padded
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_15.png" vspace="5"/>
+   <p>
+    Markers can be added to flows as follows:
+   </p>
+   <pre class="codeinput">HybridPlotBuilder()...
+    .flowMarker('.')...   % Add dots
+    .flowMarkerSize(7)... % Adjust size
+    .plotFlows(sol.select(1))
+ylim padded
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_16.png" vspace="5"/>
+   <p>
+    Similarly, we can change the appearance of jumps.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder()...
+    .jumpColor('m')... % magenta
+    .jumpLineWidth(1)...
+    .jumpLineStyle('-.')...
+    .jumpStartMarker('+')...
+    .jumpStartMarkerSize(16)...
+    .jumpEndMarker('o')...
+    .jumpEndMarkerSize(10)...
+    .plotPhase(sol_3D.select(1:2))
+axis padded
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_17.png" vspace="5"/>
+   <p>
+    To configure the the jump markers on
+    <i>
+     both
+    </i>
+    sides of jumps with a single function call, omit 'Start' and 'End' from the function names:
+   </p>
+   <pre class="codeinput">HybridPlotBuilder()...
+    .jumpMarker('s')... % square
+    .jumpMarkerSize(12)...
+    .plotPhase(sol_3D.select(1:2))
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_18.png" vspace="5"/>
+   <p>
+    To hide jumps or flows, set the corresponding color to
+    <tt>'none'</tt>
+    . To hide jump markers only, but show jump lines set the marker style to
+    <tt>'none'</tt>
+    . Similarly, to hide only jump lines, set the jump line style to
+    <tt>'none'</tt>
+    .
+   </p>
+   <pre class="codeinput">HybridPlotBuilder()...
+    .flowColor('none')...
+    .jumpEndMarker('none')...
+    .jumpLineStyle('none')...
+    .plotFlows(sol.select(2))
+title('Start of Each Jump') % An alternative way to add titles is shown below.
+ylabel('$x_2$')
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_19.png" vspace="5"/>
+   <p>
+    Sequences of colors can be set by passing a cell array to the color functions. When auto-subplots are off, the color that each component is plotted rotates through the given colors. The following commands create a plot where the first component is plotted with blue flows and red jumps, and the second component is plotted with black flows and green jumps. (If the solution had a third component, the colors would cycle back to blue flows and red jumps.)
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().subplots('off')...
+    .flowColor({'blue', 'black'})...
+    .jumpColor({'red', 'green'})...
+    .legend('Component 1', 'Component 2')... % The 'legend' function is described below.
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_20.png" vspace="5"/>
+   <p>
+    When auto-subplots are enabled, then all the plots added by a single call to a plotting function are the same color, and all the plots added by the next call to a plotting function are the next color, and so on. Note, here, we set both flow and jump color via the
+    <tt>color</tt>
+    function. Furthermore, the
+    <tt>'matlab'</tt>
+    argument tells
+    <tt>HybridPlotBuilder</tt>
+    to use the default colors used by MATLAB plots.
+   </p>
+   <pre class="codeinput">hpb = HybridPlotBuilder().subplots('on').color('matlab');
+hold on
+hpb.legend('$h$', '$v$').plotFlows(sol);
+hpb.legend('$2h$', '$2v$').plotFlows(sol, @(x) 2*x);
+hpb.legend('$3h$', '$3v$').plotFlows(sol, @(x) 3*x);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_21.png" vspace="5"/>
+   <h2 id="26">
+    Titles, Labels, and Legends
+   </h2>
+   <p>
+    This section describes how to add text to plots using
+    <tt>HybridPlotBuilder</tt>
+    . The built-in MATLAB functions for adding labels and titles can also be used, but using
+    <tt>HybridPlotBuilder</tt>
+    offers the ability to easily configure default settings (text size, interpreter, etc.) and use automatically generated axis labels. The built-in
+    <tt>legend</tt>
+    function does not work with plots generated by
+    <tt>HybridPlotBuilder</tt>
+    .
+   </p>
+   <p>
+    <h3>
+     Axis Labels
+    </h3>
+   </p>
+   <p>
+    For state axes, labels are set via the
+    <tt>labels</tt>
+    function (or, optionally, the
+    <tt>label</tt>
+    function if there is only one label). Depending on the type of plot and whether auto-subplots is enabled, all components will either be grouped into a single label or each component will have its own label. All components are grouped into a single label if auto-subplots is
+    <tt>'off'</tt>
+    and the plot is generated using
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    , or
+    <tt>plotHybrid</tt>
+    (in other words, any plotting function except
+    <tt>phasePlot</tt>
+    ).
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder()...
+    .subplots('off')... % This is the default
+    .label('All Components')...
+    .plotFlows(sol_8D)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_22.png" vspace="5"/>
+   <p>
+    Alternatively, each component has its own
+    <i>
+     label
+    </i>
+    when each component has its own
+    <i>
+     axis
+    </i>
+    —either because each component is placed in its own subplot using auto-subplots or each component has its own axis in a single phase plot produced using
+    <tt>plotPhase</tt>
+    . In this case, the label for each component is set by passing multiple strings to
+    <tt>HybridPlotBuilder.labels()</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder()...
+    .labels('Component 1', 'Component 2')...
+    .plotPhase(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_23.png" vspace="5"/>
+   <p>
+    If there are fewer labels provided than the number of component axes (or no labels are provided at all), then axis labels are automatically generated. The default format is
+    \(x_1\)
+    ,
+    \(x_2\)
+    , etc., but this can be modified by passing a format string to the function
+    <tt>xLabelFormat</tt>
+    . Any occurance of
+    <tt>'%d'</tt>
+    in the format string is substituted with the index number of the component.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().subplots('on')...
+    .xLabelFormat('$Z_{%d}$')...
+    .plotFlows(sol_8D.select(1:4))
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_24.png" vspace="5"/>
+   <p>
+    The labels for continuous-time and discrete-time axes (i.e.,
+    \(t\)
+    and
+    \(j\)
+    ) can be modified as follows. Using an empty string removes the label.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder()...
+    .tLabel('$t$ [s]')...
+    .jLabel('$j$ [count]')...
+    .plotHybrid(sol.select(1))
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_25.png" vspace="5"/>
+   <p>
+    <h3>
+     Titles
+    </h3>
+   </p>
+   <p>
+    Titles can be set for each subplot via the
+    <tt>titles</tt>
+    functions (or, optionally, the
+    <tt>title</tt>
+    function if there is only one title).
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().subplots('on')...
+    .titles('Component 1', 'Component 2')...
+    .plotFlows(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_26.png" vspace="5"/>
+   <p>
+    If auto-subplots is
+    <tt>'off'</tt>
+    or a phase plot is generated, then there is only one subplot and thus only one title is used.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().title('Phase Plot').plotPhase(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_27.png" vspace="5"/>
+   <p>
+    <h3>
+     Legend Entries
+    </h3>
+   </p>
+   <p>
+    The function
+    <tt>HybridPlotBuilder.legend</tt>
+    is used to add legend entries to plots. When using
+    <tt>plotPhase</tt>
+    , only one legend entry is used.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().legend('Phase Plot').plotPhase(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_28.png" vspace="5"/>
+   <p>
+    Otherwise, when using
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    , or
+    <tt>plotHybrid</tt>
+    , one legend entry is used for each state component (this is true regardless of whether auto-subplots are
+    <tt>'on'</tt>
+    or
+    <tt>'off'</tt>
+    ).
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().color('matlab')...
+    .legend('Component 1', 'Component 2', 'Component 3', 'Component 4')...
+    .plotFlows(sol_8D.select(1:4));
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_29.png" vspace="5"/>
+   <p>
+    Additional plots with legend entries can be added to the same figure by reusing the same
+    <tt>HybridPlotBuilder</tt>
+    object.
+   </p>
+   <pre class="codeinput">clf
+hpb = HybridPlotBuilder().subplots('on').color('matlab');
+hpb.legend('$x_1$', '$x_2$').plotFlows(sol);
+hold on
+hpb.legend('$-x_1$', '$-x_2$').plotFlows(sol.transform(@(x) -x))
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_30.png" vspace="5"/>
+   <p>
+    To omit a component from the legend, set the label to an empty string.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().subplots('on')...
+    .legend('', 'Component 2')...
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_31.png" vspace="5"/>
+   <p>
+    Graphic objects added to a figure without
+    <tt>HybridPlotBuilder</tt>
+    can be added to the legend by passing the graphic handle to
+    <tt>addLegendEntry</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+pb = HybridPlotBuilder().legend('Hybrid Plot').plotPhase(sol);
+hold on
+axis equal
+
+% Plot a circle.
+theta = linspace(0, 2*pi);
+plt_handle = plot(10*cos(theta), 10*sin(theta), 'black');
+
+% Pass the circle to the plot builder with the desired legend label 'Circle'.
+pb.addLegendEntry(plt_handle, 'Circle');
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_32.png" vspace="5"/>
+   <p>
+    To set legend properties, such as location and number of columns, pass the legend labels to
+    <tt>HybridPlotBuilder.legend</tt>
+    as a cell array (enclosed with braces '{}') and pass name/value pairs in subsequent arguments. Only the options from the last time
+    <tt>HybridPlotBuilder.legend</tt>
+    is called are used. If no options are passed, then the default options for the builtin
+    <tt>legend</tt>
+    function are used. See
+    <tt>doc('legend')</tt>
+    for a description of legend properties.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().subplots('on')...
+    .legend({'h', 'v'}, 'Location', 'eastoutside')...
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_33.png" vspace="5"/>
+   <p>
+    Alternatively, legend options can be set using
+    <tt>legendOptions</tt>
+    , which is useful in conjunction with
+    <tt>addLegendEntry</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+pb = HybridPlotBuilder();
+
+% Plot a circle and add legend entry.
+theta = linspace(0, 2*pi);
+plt_handle = plot(10*cos(theta), 10*sin(theta), 'black');
+pb.addLegendEntry(plt_handle, 'Circle');
+axis equal
+ylim padded
+
+% Change the location of the legend.
+pb.legendOptions('Location', 'west');
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_34.png" vspace="5"/>
+   <p>
+    Setting the legend options via the methods above applies the same settings to the legends in all subplots. To modify legend options separately for each subplot, use the
+    <tt>configurePlots</tt>
+    function described below.
+   </p>
+   <p>
+    In some cases, you may wish to display the legend entries in a different order than the plots were added to the figure, or remove a entry from the legend. This can be accomplished with
+    <tt>reorderLegendEntries</tt>
+    and
+    <tt>circshiftLegendEntries</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+pb = HybridPlotBuilder();
+
+% Plot state trajectory.
+pb.legend('$x(t)$').plotPhase(sol);
+hold on
+xlim padded
+
+% Plot the initial condition last, so that it is displayed on top of state
+% trajectory.
+x0_plt = plot(sol.x0(1), sol.x0(2), 'o');
+pb.addLegendEntry(x0_plt, '$x_0$')
+
+% Reorder legend entries
+pb.reorderLegendEntries([2 1])
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_35.png" vspace="5"/>
+   <p>
+    <h3>
+     Summary of How Many Lables, Titles, and Legend Entries Are Used
+    </h3>
+   </p>
+   <p>
+    In this subsection, we summarize and give examples of how many labels, titles, and legend entries are used, depending on whether auto-subplots are enabled and the choice of plotting function.
+   </p>
+   <p>
+    <table>
+     <caption style="caption-side:bottom">
+      A * indicates that the property in
+      that row has no effect on the text property in that column.
+     </caption>
+     <tr>
+      <th style="border:none;">
+      </th>
+      <th>
+       Component Labels
+      </th>
+      <th>
+       Titles
+      </th>
+      <th>
+       Legend Entries
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Auto-subplots
+       <code>'off'</code>
+      </th>
+      <td>
+       Single (unless
+       <code>plotPhase()</code>
+       )
+      </td>
+      <td>
+       Single
+      </td>
+      <td>
+       *
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Auto-subplots
+       <code>'on'</code>
+      </th>
+      <td>
+       Multiple: one label per subplot
+      </td>
+      <td>
+       Multiple: one title per subplot
+      </td>
+      <td>
+       *
+      </td>
+     </tr>
+     <tr>
+      <th>
+       <code>plotPhase()</code>
+      </th>
+      <td>
+       Multiple: one label per axis
+      </td>
+      <td>
+       *
+      </td>
+      <td>
+       Single
+      </td>
+     </tr>
+     <tr>
+      <th>
+       <code>plotFlows()</code>
+       ,
+       <code>plotJumps()</code>
+       , or
+       <code>plotHybrid()</code>
+      </th>
+      <td>
+       Single (unless auto-subplots is
+       <code>'on'</code>
+       )
+      </td>
+      <td>
+       *
+      </td>
+      <td>
+       Multiple: one legend entry per component
+      </td>
+     </tr>
+    </table>
+   </p>
+   <p>
+    <b>
+     Example:
+    </b>
+    auto-subplots
+    <tt>'off'</tt>
+    and using
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    or
+    <tt>plotHybrid</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().color('matlab')...
+    .subplots('off')... % (default)
+    .label('My Label')... % Single: auto-subplots is 'off' and using plotFlows.
+    .title('My Title')... % Single: auto-subplots is 'off'.
+    .legend('Legend 1', 'Legend 2')... % One per component: using plotFlows
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_36.png" vspace="5"/>
+   <p>
+    <b>
+     Example:
+    </b>
+    auto-subplots
+    <tt>'on'</tt>
+    and using
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    or
+    <tt>plotHybrid</tt>
+    .
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder()...
+    .subplots('on')...
+    .labels('Label 1', 'Label 2')... % One per component: auto-subplots is 'on'
+    .titles('Title 1', 'Title 2')... % One per component: auto-subplots is 'on'
+    .legend('Legend 1', 'Legend 2')... % One per component: using plotFlows
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_37.png" vspace="5"/>
+   <p>
+    <b>
+     Example:
+    </b>
+    Using
+    <tt>plotPhase</tt>
+    (auto-subplots has no effect).
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder()...
+    .labels('Label 1', 'Label 2')... % One per component: using plotPhase
+    .title('My Title')... % Single: using plotPhase
+    .legend('My legend')... % Single: using plotPhase
+    .plotPhase(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_38.png" vspace="5"/>
+   <p>
+    <h3>
+     Text Interpreters
+    </h3>
+   </p>
+   <p>
+    The default
+    <a href="https://www.mathworks.com/help/matlab/ref/matlab.graphics.primitive.text-properties.html">
+     text interpreter
+    </a>
+    in
+    <tt>HybridPlotBuilder</tt>
+    is
+    <tt>latex</tt>
+    . This can be changed by calling
+    <tt>HybridPlotBuilder.titleInterpreter()</tt>
+    or
+    <tt>HybridPlotBuilder.labelInterpreter()</tt>
+    with one of these values:
+    <tt>'none'</tt>
+    ,
+    <tt>'tex'</tt>
+    , or
+    <tt>'latex'</tt>
+    . The default labels automatically change to match the label interpreter.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder().subplots('on')...
+    .titleInterpreter('none')...
+    .labelInterpreter('tex')...
+    .titles('In this figure, ''tex'' is used for labels and ''none'' for titles',...
+            'In ''tex'', dollar signs do not indicate a switch to math mode') ...
+    .labels('z_1', '$z_2$')...
+    .plotFlows(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_39.png" vspace="5"/>
+   <h2 id="47">
+    Filtering Solutions
+   </h2>
+   <p>
+    Portions of solutions can be hidden with the
+    <tt>filter</tt>
+    function. In this example, we create a filter that only includes points where the second component (velocity) is negative. (If the time-step size along flows is large, deleted lines connected to filtered points may extends a noticible distance into the portion of the solution that should be visible.)
+   </p>
+   <pre class="codeinput">is_falling = sol.x(:,2) < 0;
+HybridPlotBuilder().subplots('on')...
+    .filter(is_falling)...
+    .plotFlows(sol)
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_40.png" vspace="5"/>
+   <p>
+    <h3>
+     Example: Plotting System Modes
+    </h3>
+   </p>
+   <p>
+    Filtering is useful for plotting systems where an integer-value component indicates the mode of the system. Here, we create a 3D system with a continuous variable
+    \(z \in \bf{R}^2\)
+    and a discrete variable
+    \(q \in \{0, 1\}\)
+    . Points in the solution where
+    \(q = 0\)
+    are plotted in blue, and points where
+    \(q = 1\)
+    are plotted in black. The same
+    <tt>HybridPlotBuilder</tt>
+    object is used for both plots by saving it to the
+    <tt>builder</tt>
+    variable (this allows us to specify the labels only once and add a legend for both plots).
+   </p>
+   <pre class="codeinput">clf
+system_with_modes = hybrid.examples.ExampleModesHybridSystem();
+
+
+% Create initial condition and solve.
+z0 = [-7; 7];
+q0 = 0;
+sol_modes = system_with_modes.solve([z0; q0], [0, 10], [0, 10], config);
+
+% Extract values for q-component.
+q = sol_modes.x(:, 3);
+
+% Plot the [1, 2] components (that is, the first two components) of
+% sol_modes at all time steps where q == 0.
+builder = HybridPlotBuilder();
+builder.title('Phase Portrait') ...
+    .labels('$x_1$', '$x_2$') ...
+    .legend('$q = 0$') ...
+    .filter(q == 0) ... % Only plot points where q is 0.
+    .plotPhase(sol_modes.select([1,2]))
+hold on % See the section below about 'hold on'
+% Plot in black the solution (still only the [1,2] components) for all time
+% steps where q == 1.
+builder.flowColor('black') ...
+    .jumpColor('none') ...
+    .legend('$q = 1$') ...
+    .filter(q == 1) ... % Only plot points where q is 1.
+    .plotPhase(sol_modes.select([1,2]))
+axis padded
+axis equal
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_41.png" vspace="5"/>
+   <p>
+    <h3>
+     Example: Showing when Bouncing Ball is Rising and Falling
+    </h3>
+   </p>
+   <p>
+    For the bouncing ball system, we can change the color of the plot based on whether the ball is falling.
+   </p>
+   <pre class="codeinput">clf
+is_falling = sol.x(:, 2) < 0;
+pb = HybridPlotBuilder()....
+    .subplots('on')...
+    .filter(is_falling)...
+    .jumpColor('none')...
+    .flowColor('k')...
+    .legend('Falling', 'Falling')...
+    .plotFlows(sol);
+hold on
+pb.filter(~is_falling)...
+    .flowColor('g')...
+    .legend('Rising', 'Rising')...
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_42.png" vspace="5"/>
+   <h2 id="50">
+    Replacing vs. Adding Plots to a Figure
+   </h2>
+   <p>
+    By default, each call to a
+    <tt>HybridPlotBuilder</tt>
+    plot function overwrites the previous plots. In the following code, we call
+    <tt>plotFlows</tt>
+    twice. The first call plots a solution in blue and red, but the second call resets the figure and plots a solution in black and green.
+   </p>
+   <pre class="codeinput">tspan = [0 10];
+jspan = [0 30];
+sol1 = system.solve([10, 0], tspan, jspan, config);
+sol2 = system.solve([ 5, 10], tspan, jspan, config);
+
+clf
+HybridPlotBuilder()... % Plots blue flows and red jumps by default.
+    .plotFlows(sol1.select(1))
+HybridPlotBuilder().flowColor('black').jumpColor('green')...
+    .title('Multiple Calls to $\texttt{plotFlows}$ with \texttt{hold off}') ...
+    .plotFlows(sol2.select(1))
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_43.png" vspace="5"/>
+   <p>
+    To plot multiple graphs on the same figure, use
+    <tt>hold on</tt>
+    , similar to standard MATLAB plotting functions.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder().plotFlows(sol1.select(1)) % Plots blue flows and red jumps by default.
+hold on
+HybridPlotBuilder().flowColor('black').jumpColor('green')...
+    .title('Multiple Calls to $\texttt{plotFlows}$ with \texttt{hold on}')...
+    .plotFlows(sol2.select(1))
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_44.png" vspace="5"/>
+   <h2 id="52">
+    Modifying Defaults
+   </h2>
+   <p>
+    The default values of all
+    <tt>HybridPlotBuilder</tt>
+    settings can be modified by calling 'set' on the 'defaults' property. The arguments are must be name-value pairs, where the name is a string that matches one of the properties in PlotSettings (names are case insensitive and underscores can be replaced with spaces).
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder.defaults.set('auto_subplots', 'on', ...
+                             'Label Size', 14, ...
+                             'Title Size', 16, ...
+                             'label interpreter', 'tex', ...
+                             'title interpreter', 'none', ...
+                             'flow_color', 'k', ...
+                             'flow line width', 2, ...
+                             'jump_color', 'k', ...
+                             'jump line width', 2, ...
+                             'jump line style', ':', ...
+                             'jump start marker', 's', ...
+                             'jump start marker size', 10, ...
+                             'jump end marker', 'none', ...
+                             'x_label_format', 'z_{%d}', ...
+                             't_label', 't [s]')
+HybridPlotBuilder()...
+    .title('Title')...
+    .legend('Legend A', 'Legend B')...
+    .plotFlows(sol);
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_45.png" vspace="5"/>
+   <p>
+    The defaults can be reset to their original value with the following command.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder.defaults.reset()
+</pre>
+   <p>
+    <h3>
+     Setting Default Scaling
+    </h3>
+   </p>
+   <p>
+    MATLAB is inconsistent about the size of text and graphics in plots on different devices. To mitigate this difference, three values are included in the settings to adjust the size of text, lines, and markers.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder.defaults.set('text scale', 1.5, ...
+                                'line scale', 3, ...
+                                'marker scale', 2)
+% Example output:
+HybridPlotBuilder()...
+    .title('Title')...
+    .legend('height')...
+    .plotFlows(sol.select(1));
+
+HybridPlotBuilder.defaults.reset() % Cleanup
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_46.png" vspace="5"/>
+   <p>
+    To set the default values in every MATLAB session, create a script named 'startup.m' in the folder returned by the
+    <tt>userpath()</tt>
+    command. The commands in this script will run every time MATLAB starts.
+   </p>
+   <h2 id="56">
+    Additional Configuration
+   </h2>
+   <p>
+    There are numerous options for configuring the appearance of MATLAB plots that are not included explicitly in
+    <tt>HybridPlotBuilder</tt>
+    (see
+    <a href="https://www.mathworks.com/help/matlab/ref/matlab.graphics.axis.axes-properties.html">
+     here
+    </a>
+    ). For plots with a single subplot, the appearance can be modified just like any other MATLAB plot.
+   </p>
+   <pre class="codeinput">HybridPlotBuilder().plotPhase(sol);
+grid on
+ax = gca;
+ax.YAxisLocation = 'right';
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_47.png" vspace="5"/>
+   <p>
+    Plots with multiple subplots can also be configured as described above by calling
+    <tt>subplot(2, 1, 1)</tt>
+    and making the desired modifications, then calling
+    <tt>subplot(2, 1, 2)</tt>
+    , etc., but that approach is messy and tediuous. Instead, the
+    <tt>configurePlots</tt>
+    function provides a cleaner alternative. A function handle is passed to
+    <tt>configurePlots</tt>
+    , which is then called by
+    <tt>HybridPlotBuilder</tt>
+    within each (sub)plot. The function handle passed to
+    <tt>configurePlots</tt>
+    must take two input arguments. The first is the axes for the subplot and the second is the index for the state component(s) plotted in the plot. For
+    <tt>plotFlows</tt>
+    ,
+    <tt>plotJumps</tt>
+    , and
+    <tt>plotHybrid</tt>
+    , this will be one integer, and for phase plots generated with
+    <tt>plot</tt>
+    , this will be a vector of two or three integers, depending on the dimension of the plot.
+   </p>
+   <pre class="codeinput">clf
+HybridPlotBuilder()...
+    .subplots('on')...
+    .legend('A', 'B')...
+    .configurePlots(@apply_plot_settings)...
+    .plotFlows(sol);
+
+function apply_plot_settings(ax, component_ndxs)
+    title(ax, sprintf('This is the plot of component %d', component_ndxs))
+    % Set the location of the legend in each plot to different positions.
+    switch component_ndxs
+        case 1
+            ax.Legend.Location = 'northeast';
+        case 2
+            ax.Legend.Location = 'southeast';
+    end
+    % Configure grid
+    grid(ax, 'on')
+    grid(ax, 'minor')
+    ax.GridLineStyle = '--';
+end
+</pre>
+   <img alt="" hspace="5" src="/images/HybridPlotBuilder_demo_48.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

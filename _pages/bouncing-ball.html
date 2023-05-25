@@ -1,0 +1,294 @@
+---
+layout: single
+title: |
+    Example Hybrid System with External Functions (Bouncing Ball)
+category: simulink
+permalink: /simulink/bouncing-ball
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    <meta category="simulink" id="github_pages" permalink="bouncing-ball">
+    </meta>
+   </p>
+   <p>
+    In this example, a bouncing ball is modeled in Simulink as a hybrid system.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#7">
+       How to Run
+      </a>
+     </li>
+     <li>
+      <a href="#8">
+       Solution
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the
+    <a href="/MATLAB_packages">package</a>
+    <tt>hybrid.examples.bouncing_ball</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      <tt>initialize.m</tt>
+     </li>
+     <li>
+      <tt>bouncing_ball.slx</tt>
+     </li>
+     <li>
+      <tt>C.m</tt>
+      ,
+      <tt>f.m</tt>
+      ,
+      <tt>D.m</tt>
+      ,
+      <tt>g.m</tt>
+     </li>
+     <li>
+      <tt>postprocess.m</tt>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <tt>Examples\+hybrid\+examples\bouncing_ball</tt>
+    (clicking this link changes your working directory).
+   </p>
+   <p>
+    For the same system modeled using the MATLAB-based HyEQ solver, see
+    <a href="/HybridSystem_demo">here</a>
+    .
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    The bouncing ball is modeled as a hybrid system with the following data:
+   </p>
+   <p>
+    \[\begin{array}{ll}
+f(x) := \left[\begin{array}{c}
+      x_{2} \\
+    -\gamma
+ \end{array}\right],
+   & C := \{ x \in \mathbb{R}^{2} \mid x_{1} \geq 0 \}
+\\ \\
+g(x) := \left[ \begin{array}{c}
+             0 \\ -\lambda x_{2}
+        \end{array}\right],
+   & D := \{x \in \mathbb{R}^2 \mid x_1 \leq 0,\ x_2 \leq 0\}
+\end{array}\]
+   </p>
+   <p>
+    where
+    \(\gamma > 0\)
+    is the acceleration due to gravity and
+    \(\lambda \in [0,1)\)
+    is the coefficient of restitution. For this example, we consider a ball bouncing on a floor at zero height.
+   </p>
+   <h2 id="3">
+    Simulink Model
+   </h2>
+   <p>
+    The following diagram shows the Simulink model of the bouncing ball. When the Simulink model is open, the blocks can be viewed and modified by double clicking on them.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_bouncing_ball_01.png" vspace="5"/>
+   <p>
+    Double-click black hybrid system
+    \(\mathcal{H}\)
+    block open a dialog box where you can specify function handles for
+    \(f\)
+    ,
+    \(g\)
+    ,
+    \(C\)
+    , and
+    \(D\)
+    , and other system configuration options.
+   </p>
+   <p>
+    <img src="/images/bb_mask_dialog.png" style="width: 100%; max-width: 450px; object-fit: contain"/>
+   </p>
+   <p>
+    To "look inside" the block, click the arrow in the lower-left corner of the block or open the block's context menu and select Mask > Look Under Mask. (To implement a hybrid system with external functions, you do not need to modify anything under the mask. All the necessary configuration is done in the mask dialog box.) The contents of the hybrid system block are shown here.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_bouncing_ball_02.png" vspace="5"/>
+   <p>
+    The
+    <b>
+     flow map
+    </b>
+    <tt>f</tt>
+    ,
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    ,
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    , and
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    are defined by interpreted MATLAB function blocks. These blocks call the MATLAB functions chosen in the mask dialog, namely
+    <tt>C.m</tt>
+    ,
+    <tt>f.m</tt>
+    ,
+    <tt>D.m</tt>
+    ,
+    <tt>g.m</tt>
+    in the
+    <tt>hybrid.examples.bouncing_ball</tt>
+    package. The MATLAB source code each function is included below.
+   </p>
+   <p>
+    <b>
+     f.m:
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xdot = f(x, parameters)
+    % Flow map for Bouncing Ball.
+    gamma = parameters.gamma; % Acceleration due to gravity.
+    xdot = [x(2); gamma];
+end
+
+</pre>
+   <p>
+    <b>
+     C.m:
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inside_C = C(x, ~) 
+    % Flow set for Bouncing Ball.
+    % Return 0 if outside of C, and 1 if inside C
+    if x(1) >= 0 % Flow if height is nonnegative.
+        inside_C = 1;
+    else 
+        inside_C = 0;
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     g.m:
+    </b>
+   </p>
+   <pre class="language-matlab">
+function xplus = g(x, parameters)
+    % Jump map for Bouncing Ball.
+    lambda = parameters.lambda; % Coefficient of bounce restitution.
+    xplus = [-x(1); -lambda*x(2)];
+end
+
+</pre>
+   <p>
+    <b>
+     D.m:
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inside_D = D(x, ~) 
+    % Jump set for Bouncing Ball.
+    % Return 0 if outside of D, and 1 if inside D
+    if (x(1) <= 0 && x(2) <= 0)
+        inside_D = 1;
+    else 
+        inside_D = 0;
+    end
+end
+
+</pre>
+   <h2 id="7">
+    How to Run
+   </h2>
+   <p>
+    The following procedure is used to simulate this example:
+   </p>
+   <div>
+    <ol>
+     <li>
+      Open
+      hybrid.examples.bouncing_ball.bouncing_ball
+      . It may take a few seconds for Simulink to open.
+     </li>
+     <li>
+      In Simulink, double click the block "Double Click to Initialize" to
+      initialize values
+      (initial conditions, parameters, etc.).
+     </li>
+     <li>
+      Start the simulation by clicking the "Run" button. Let the simulation finish.
+     </li>
+     <li>
+      Double click the block "Double Click to Plot Solutions" to
+      generate plots
+      .
+     </li>
+    </ol>
+   </div>
+   <h2 id="8">
+    Solution
+   </h2>
+   <p>
+    A solution to the bouncing ball system from
+    \(x(0,0)=[1,0]^\top\)
+    and with
+    <tt>TSPAN = [0 10]</tt>
+    ,
+    <tt>JSPAN = [0 20]</tt>
+    ,
+    <tt>rule = 1</tt>
+    ,
+    \(g = -9.8\)
+    , and
+    \(\lambda = 0.9\)
+    is shown plotted against continuous time
+    \(t\)
+    :
+   </p>
+   <img alt="" hspace="5" src="/images/Help_bouncing_ball_03.png" vspace="5"/>
+   <p>
+    and against discrete time
+    \(j\)
+    :
+   </p>
+   <img alt="" hspace="5" src="/images/Help_bouncing_ball_04.png" vspace="5"/>
+   <p>
+    The next plot depicts the corresponding hybrid arc for the position state.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_bouncing_ball_05.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

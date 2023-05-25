@@ -13,8 +13,25 @@ src_dir = '../doc/html'
 jekyll_header_format = """---
 layout: single
 title: |
-    {title}
+    {title}"""
+category_format = """
+category: {category}"""
+permalink_format = """
+permalink: {permalink}"""
+redirect_format = """---
+permalink: {original_filename}
 ---
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <meta http-equiv="refresh" content="; url='{permalink}'" /> -->
+        <meta http-equiv="refresh" content="0; url='{permalink}'" />
+    </head>
+    <body>
+        <p>You should be immediately redirected to {permalink}. 
+        If not, please click <a href="{permalink}">here</a>.</p>
+    </body>
+</html>
 """
 
 def main():
@@ -24,7 +41,8 @@ def main():
     # Clean the pages directory and repopulate.
     shutil.rmtree(tmp_dir, ignore_errors=True)
     shutil.copytree(src_dir, tmp_dir, dirs_exist_ok=True)
-    shutil.rmtree(out_dir)
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
     os.mkdir(out_dir)
     shutil.move(os.path.join(tmp_dir, 'images'), os.path.join(out_dir, 'images'))
 
@@ -39,15 +57,19 @@ def main():
             shutil.move(os.path.join(tmp_dir, file_name), os.path.join(out_dir, 'images', file_name))
         else:
             warnings.warn(f"Skipping {file_name}")
-    translate_matlab_html_to_github_wiki_markdown('TOC.html', tmp_dir, '.')
-    shutil.move('TOC.html', 'index.html')
 
+    shutil.move('_pages/index.html', 'index.html')
+    # Clean up the temp directory.
     # shutil.rmtree(tmp_dir)
 
 
 def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
     in_path = os.path.join(in_dir, file_name)
-    out_path = os.path.join(out_dir, file_name)
+    (file_base, file_extension) = os.path.splitext(file_name)
+
+    category = ""
+    permalink_base = ""
+    permalink = ""
 
     with open(in_path, 'r') as fp:
         soup = bs4.BeautifulSoup(fp.read(), 'html.parser', preserve_whitespace_tags=["tt", "pre", "code"])
@@ -60,6 +82,16 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         if header:
             title = header.string
             header.decompose()
+
+        # meta = soup["github pages info"]
+        meta = soup.find(id="github_pages")
+        if meta:
+            # Because of these lines, every documentation page must have a permalink and a category, if the meta block
+            # is included. They may be empty strings.
+            permalink_base = meta["permalink"]
+            category = meta["category"]
+
+            print(f"Found meta. category={category}, permalink={permalink_base}")
 
         # Remove the footer "Published with MATLAB R2022b" that is appended by MATLAB.
         def is_footer(html_tag):
@@ -101,7 +133,8 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
                     warnings.warn(f"No equation found in alt text: {alt_text}")
                     continue
 
-                # alt_text = alt_text.replace('$', '')
+                # For the sets of real and natural numbers, we use bold-face font in MATLAB because (bizarrely) MATLAB
+                # doesn't support the blackboard font. Here we convert to \mathbb.
                 equation = equation.replace("\\mathbf{R}", "\\mathbb{R}")
                 equation = equation.replace("\\mathbf{N}", "\\mathbb{N}")
 
@@ -113,7 +146,7 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         # Convert image paths images into MathJax.
         for img_tag in soup.findAll('img'):
             img_src:str = img_tag.get('src')
-            print(img_src)
+            # print(img_src)
             if img_src.startswith('images/'):
                 img_src = '/' + img_src
             else:
@@ -125,11 +158,51 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         for element in soup(text=lambda text: isinstance(text, Comment)):
             element.extract()
 
+    # permalink_last = permalink.split('/')[-1]
+    out_path = os.path.join(out_dir, permalink_base+".html")
+    if permalink_base and not (permalink_base == file_base):
+        # permalink_file_name = permalink + '.html'
+        redirect_path = os.path.join(out_dir, file_name)
+        print(f'Redirecting {redirect_path} to {out_path}')
+
+        # Write the redirect file.
+        with open(redirect_path, 'w', encoding="utf-8") as redirect_file:
+            if category:
+                category_prefix = f'/{category}'
+            else:
+                category_prefix = ''
+            permalink = f'{category_prefix}/{permalink_base}'
+            print(f'Permalink = {permalink} from base = {permalink_base} with category={category}')
+
+            redirect_content = redirect_format.format(original_filename=file_base, permalink=permalink)
+            redirect_file.write(redirect_content)
+    else:
+        out_path = os.path.join(out_dir, file_name)
+
+    if not permalink:
+        permalink = permalink_base
+
+    # Check that the output file does not exist.
+    if os.path.isfile(out_path):
+        raise FileExistsError(f'The output file {out_path} already exists')
+
     # Write the output file.
     with open(out_path, 'w', encoding="utf-8") as outfile:
-        # We use formatter=None to prevent converting "&", "<", etc. into HTML entities (e.g., "&amp;").
-        outfile.write(jekyll_header_format.format(title=title))
+        # Build header
+        header = jekyll_header_format.format(title=title)
+        if category:
+            header += category_format.format(category=category)
+            # category=None
+        if permalink_base:
+            # header += permalink_format.format(permalink=f'/{category}/{permalink}')
+            header += permalink_format.format(permalink=permalink)
+
+        #     # permalink=None
+        header += "\n---\n"
+        outfile.write(header)
+
         outfile.write("{% raw %}\n")
+        # We use formatter=None to prevent converting "&", "<", etc. into HTML entities (e.g., "&amp;")
         outfile.write(soup.prettify(formatter=None))
         outfile.write("{% endraw %}\n")
         # print(f"Wrote output to {out_path}")

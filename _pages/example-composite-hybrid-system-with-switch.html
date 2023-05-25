@@ -1,0 +1,173 @@
+---
+layout: single
+title: |
+    Example: Composite Hybrid System with Switched Subsystem
+category: matlab
+permalink: /matlab/example-composite-hybrid-system-with-switch
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    <meta category="matlab" id="github_pages" permalink="example-composite-hybrid-system-with-switch">
+    </meta>
+   </p>
+   <p>
+    We create a composite system that consists of a plant, two controllers, and a switch that toggles between the controllers based on some criteria.
+   </p>
+   <pre class="codeinput">A = [0, 1; 0, 0];
+B = [0; 1];
+K0 = [-1, -1];
+K1 = [ 2, -1];
+input_dim = 1;
+plant = hybrid.subsystems.LinearContinuousSubsystem(A, B);
+controller_0 = hybrid.subsystems.MemorylessSubsystem(2, 1, @(~, z_plant) K0*z_plant);
+controller_1 = hybrid.subsystems.MemorylessSubsystem(2, 1, @(~, z_plant) K1*z_plant);
+switcher = hybrid.subsystems.SwitchSubsystem(input_dim);
+sys = CompositeHybridSystem('plant', plant, ...
+                             'kappa0', controller_0, ...
+                             'kappa1', controller_1, ...
+                             'switcher', switcher)
+</pre>
+   <pre class="codeoutput">sys = 
+CompositeHybridSystem:
+├ Subsystem 1: 'plant' (hybrid.subsystems.LinearContinuousSubsystem)
+│ 		  Flow input: @(~,~,~,~,~)zeros(1,1)
+│ 		  Jump input: @(~,~,~,~,~)zeros(1,1)
+│ 		      Output: y1=@(x)C*x
+│ 		 Dimensions: State=2, Input=1, Output=2
+├ Subsystem 2: 'kappa0' (hybrid.subsystems.MemorylessSubsystem)
+│ 		  Flow input: @(~,~,~,~,~)zeros(2,1)
+│ 		  Jump input: @(~,~,~,~,~)zeros(2,1)
+│ 		      Output: y2=@(~,z_plant)K0*z_plant
+│ 		 Dimensions: State=0, Input=2, Output=1
+├ Subsystem 3: 'kappa1' (hybrid.subsystems.MemorylessSubsystem)
+│ 		  Flow input: @(~,~,~,~,~)zeros(2,1)
+│ 		  Jump input: @(~,~,~,~,~)zeros(2,1)
+│ 		      Output: y3=@(~,z_plant)K1*z_plant
+│ 		 Dimensions: State=0, Input=2, Output=1
+└ Subsystem 4: 'switcher' (hybrid.subsystems.SwitchSubsystem)
+  		  Flow input: @(~,~,~,~,~)zeros(4,1)
+  		  Jump input: @(~,~,~,~,~)zeros(4,1)
+  		      Output: y4=@(q,u)output_switch(q,u)
+  		 Dimensions: State=1, Input=4, Output=1
+</pre>
+   <p>
+    The full state vector is passed as input to the controllers. We can ommit the '~'s from the argument list since we only use the first argument is used.
+   </p>
+   <pre class="codeinput">sys.setInput(controller_0, @(z_plant, ~, ~, ~) z_plant);  % '~'s included
+sys.setInput(controller_1, @(z_plant) z_plant); % '~'s omitted
+</pre>
+   <p>
+    The current choice of controller is stored as state variable
+    <tt>q</tt>
+    in
+    <tt>switcher</tt>
+    , where
+    <tt>controller_0</tt>
+    is passed through as the output of
+    <tt>switcher</tt>
+    whenever
+    <tt>q = 0</tt>
+    and
+    <tt>controller_1</tt>
+    is passed through when
+    <tt>q = 1</tt>
+    . The plant state
+    <tt>z_plant</tt>
+    and output of the controllers, named
+    <tt>u0</tt>
+    and
+    <tt>u1</tt>
+    , are passed to the switcher. The
+    <tt>SwitchSubsystem</tt>
+    class provides a
+    <tt>wrapInput</tt>
+    method that handles the creation of the input vector from the given values. The third argument to
+    <tt>wrapInput</tt>
+    is the criteria for switching to to
+    <tt>q = 0</tt>
+    and the fourth argument is the criteria for switching to
+    <tt>q = 1</tt>
+    . If #
+    <tt>q=0</tt>
+    and the third argument of
+    <tt>wrapInput</tt>
+    is zero, #
+    <tt>q=1</tt>
+    and fourth argument of
+    <tt>wrapInput</tt>
+    is zero, or # the third and fourth arguments of
+    <tt>wrapInput</tt>
+    are zero, then
+    <tt>q</tt>
+    is held constant.
+   </p>
+   <pre class="codeinput">sys.setInput(switcher, @(z_plant, u0, u1) ...
+             switcher.wrapInput(u0, u1, norm(z_plant) >= 3, norm(z_plant) <= 1));
+</pre>
+   <p>
+    The output of the switch is passed to the plant.
+   </p>
+   <pre class="codeinput">sys.setInput(plant, @(~, ~, ~, u_switched) u_switched);
+</pre>
+   <p>
+    Compute a solution. Note that the MemorylessSubsystems have no state, so empty arrays are given in
+    <tt>x0</tt>
+    for the corresponding subsystems.
+   </p>
+   <pre class="codeinput">x0 = {[10; 0], [], [], 1};
+sol = sys.solve(x0, [0, 100], [0, 100])
+</pre>
+   <pre class="codeoutput">sol = 
+  CompositeHybridSolution with properties:
+
+            subsys_count: 4
+                      x0: [7×1 double]
+                      xf: [7×1 double]
+       termination_cause: T_REACHED_END_OF_TSPAN
+                       t: [285×1 double]
+                       j: [285×1 double]
+                       x: [285×7 double]
+            flow_lengths: [39×1 double]
+              jump_times: [38×1 double]
+    shortest_flow_length: 0
+       total_flow_length: 100
+              jump_count: 38
+</pre>
+   <p>
+    Plot the solution, using different colors when
+    \(q=0\)
+    and
+    \(q=1\)
+    .
+   </p>
+   <pre class="codeinput">clf
+hold on
+q = sol('switcher').x;
+hpb = HybridPlotBuilder().jumpMarker('none');
+
+% Plot solution where q=0
+hpb.filter(q == 0)...
+    .legend('$q = 0$')...
+    .plotPhase(sol('plant'));
+
+% Plot solution where q=1
+hpb.filter(q == 1)...
+    .legend('$q = 1$')...
+    .flowColor('green')...
+    .plotPhase(sol('plant'));
+
+% Configure plot appearance
+axis equal
+axis padded
+set(gca(), 'XAxisLocation', 'origin');
+set(gca(), 'YAxisLocation', 'origin');
+</pre>
+   <img alt="" hspace="5" src="/images/MATLAB_switched_system_example_demo_01.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

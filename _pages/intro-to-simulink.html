@@ -1,0 +1,705 @@
+---
+layout: single
+title: |
+    Introduction to the Simulink-based Hybrid Equation Simulator
+category: simulink
+permalink: /simulink/intro-to-simulink
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    <meta category="simulink" id="github_pages" permalink="intro-to-simulink">
+    </meta>
+   </p>
+   <p>
+    This document describes the Simulink-based hybrid equation simulator from the Hybrid Equations Toolbox, including an introduction to the primary components. For documentation regarding cyber-physical components, see
+    <a href="/CPS_Components">here</a>
+    . A list of examples are available
+    <a href="/TOC_examples">here</a>
+    . For a description of the internal workings of Hybrid System blocks, see
+    <a href="/Help_integrator_system">The Integrator System</a>
+    .
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#1">
+       Primary Components
+      </a>
+     </li>
+     <li>
+      <a href="#2">
+       Deciding Whether to Use Embedded or External Functions
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       How to Use a Hybrid System Block
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Writing Functions for
+       \(f\)
+       ,
+       \(g\)
+       ,
+       \(C\)
+       , and
+       \(D\)
+      </a>
+     </li>
+     <li>
+      <a href="#5">
+       Defining Function Parameters
+      </a>
+     </li>
+     <li>
+      <a href="#6">
+       Variable Initialization
+      </a>
+     </li>
+     <li>
+      <a href="#7">
+       Postprocessing and Plotting solutions
+      </a>
+     </li>
+     <li>
+      <a href="#8">
+       Automatically Running Initialization and Postprocessing Scripts
+      </a>
+     </li>
+    </ul>
+   </div>
+   <h2 id="1">
+    Primary Components
+   </h2>
+   <p>
+    The HyEQ Toolbox includes four main Simulink library blocks that allow for simulation of hybrid systems:
+   </p>
+   <div>
+    <ul>
+     <li>
+      \(\mathcal{H}\)
+      <b>
+       defined with external functions
+      </b>
+      . For this block, the data of the system
+      \((C, f, D, g)\)
+      are defined as MATLAB functions in plain-text
+      <tt>.m</tt>
+      files. This block does not support systems with inputs.
+     </li>
+     <li>
+      \(\mathcal{H}\)
+      <b>
+       defined with external functions and inputs
+      </b>
+      . This block is the same as the prior one, except that it has inputs.
+     </li>
+     <li>
+      \(\mathcal{H}\)
+      <b>
+       defined with embedded functions
+      </b>
+      . For this block, the data of the system
+      \((C, f, D, g)\)
+      are defined as embedded functions that can only be edited within Simulink. This block does not support systems with inputs.
+     </li>
+     <li>
+      \(\mathcal{H}\)
+      <b>
+       defined with embedded functions and inputs
+      </b>
+      . This block is the same as the prior one, except that it has inputs.
+     </li>
+    </ul>
+   </div>
+   <p>
+    The following image shows these blocks in the Simulink Library Browser.
+   </p>
+   <p>
+    <img src="/images/embedded_blocks.png" style="width: 100%; max-height: 200px; object-fit: contain"/>
+    <br/>
+    <br/>
+    <img src="/images/external_blocks.png" style="width: 100%; max-height: 200px; object-fit: contain"/>
+   </p>
+   <p>
+    Next, we see inside the Simulink blocks for simulating a hybrid system
+    \(\mathcal{H}\)
+    with inputs implemented with using
+    <i>
+     embedded MATLAB function blocks
+    </i>
+    .
+   </p>
+   <p>
+    <img src="/images/HSinput.png" style="width: 100%; max-height: 472px; object-fit: contain"/>
+   </p>
+   <p>
+    In this implementation, four blocks are used to define the
+    <i>
+     data
+    </i>
+    of the hybrid system
+    \(\mathcal{H}\)
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      The flow map is implemented in the embedded function block
+      <tt>flow map f</tt>
+      . Its input is a vector with components defining the state of the system
+      \(x\)
+      , and the input
+      \(u\)
+      . Its output is the value of the flow map
+      \(f\)
+      which is connected to the  input of an integrator.
+     </li>
+     <li>
+      The flow set is implemented in the embedded function block
+      <tt>flow set C</tt>
+      . Its input is a vector with components
+      \(x^-\)
+      and input
+      \(u\)
+      of the
+      <i>
+       Integrator system
+      </i>
+      . Its output is equal to
+      \(1\)
+      if the state belongs to the set
+      \(C\)
+      or equal to
+      \(0\)
+      otherwise. The minus notation denotes the previous value of the variables (before integration). The value
+      \(x^-\)
+      is obtained from the state port of the integrator.
+     </li>
+     <li>
+      The jump map is implemented in the embedded function block
+      <tt>jump map g</tt>
+      . Its input is a vector with components
+      \(x^-\)
+      and input
+      \(u\)
+      of the
+      <i>
+       Integrator system
+      </i>
+      . Its output is the value of the jump map
+      \(g\)
+      .
+     </li>
+     <li>
+      The jump set is implemented in the embedded function block
+      <tt>jump set D</tt>
+      . Its input is a vector with components
+      \(x^-\)
+      and input
+      \(u\)
+      of the
+      <i>
+       Integrator system
+      </i>
+      . Its output is equal to
+      \(1\)
+      if the state belongs to
+      \(D\)
+      or equal to
+      \(0\)
+      otherwise.
+     </li>
+    </ul>
+   </div>
+   <h2 id="2">
+    Deciding Whether to Use Embedded or External Functions
+   </h2>
+   <p>
+    Prior to v3.0, only hybrid systems with embedded function blocks could be used to model systems with inputs, but now external functions can be used for systems with inputs as well. Thus, embedded vs. external functions are interchangable in terms of the types of systems they can model. There are other benefits and limitations to each, however.
+   </p>
+   <p>
+    External functions have the benefits that the functions are stored in plaintext
+    <tt>.m</tt>
+    files, so they can be easily tracked with source control managagment software, such as Git. They can also be resused without modification when using the HyEQ MATLAB library.
+   </p>
+   <p>
+    Embedded functions, on the other hand, result in the entire Simulink model being self-contained in a single file. Simulations may also be somewhat faster and can be compiled and deployed to embedded systems. The code used in an embedded function is restricted to
+    <a href="https://www.mathworks.com/help/simulink/ug/matlab-language-features-supported-for-code-generation.html">
+     MATLAB Language Features Supported for C/C++ Code Generation
+    </a>
+    .
+   </p>
+   <h2 id="3">
+    How to Use a Hybrid System Block
+   </h2>
+   <p>
+    To add a Hybrid System to a Simulink model:
+   </p>
+   <div>
+    <ol>
+     <li>
+      Open the Simulink Library Browser and select "Hybrid Equations Toolbox" from the list of toolboxs and drag the desired block into your model.
+     </li>
+     <li>
+      Double-click on the Hybrid System block to open a dialog box. Fill each field with either your desired value or a variable that you define in the initialization script.
+     </li>
+     <li>
+      Define the functions for
+      \(f\)
+      ,
+      \(g\)
+      ,
+      \(C\)
+      , and
+      \(D\)
+      for the hybrid system. The process for specifying the functions are different for embedded vs. external functions, so we describe each approach below.
+     </li>
+     <li>
+      Connect the intputs and outputs as desired. For Hybrid System blocks with inputs, there are two state outputs
+      \(x\)
+      and
+      \(x^-\)
+      . Most of the time, you should use the
+      \(x\)
+      output, as it is the current state of the Hybrid Subsystem block. Sometimes, however, when you have a closed loop system, Simulink warns of an "<https://www.mathworks.com/help/simulink/ug/algebraic-loops.html Alegbraic Loop>" error. This means that there is a dependency loop that must be resolved. To fix it, switch from using the
+      \(x\)
+      output to the
+      \(x^-\)
+      output somewhere in the loop (changing a single connection is sufficient). The
+      \(x^-\)
+      output is delayed by one integration step behind
+      \(x\)
+      , thereby breaking the dependency loop.
+     </li>
+     <li>
+      When a HyEQ block is added to a Simulink model, several things are changed in the model. In particular, solver settings are changed such that the relative tolerance is a variable named
+      <tt>RelTol</tt>
+      , the maximum step is
+      <tt>MaxStep</tt>
+      , and the simulation stop time is
+      <tt>T</tt>
+      . You must define
+      <tt>RelTol</tt>
+      ,
+      <tt>MaxStep</tt>
+      , and
+      <tt>T</tt>
+      prior to running the Simulink model (e.g., in an initialization script, as described below).
+     </li>
+    </ol>
+   </div>
+   <p>
+    <b>
+     How to define
+     \(f\)
+     ,
+     \(g\)
+     ,
+     \(C\)
+     , and
+     \(D\)
+     in hybrid systems with external functions
+    </b>
+    . To specify
+    \(f\)
+    ,
+    \(g\)
+    ,
+    \(C\)
+    , and
+    \(D\)
+    for a hybrid system with external functions block, create four MATLAB function files (.m extensions) that are either on the MATLAB path or in the working directory from which you will run the Simulink model. (Using
+    <a href="https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html">
+     packages
+    </a>
+    can help prevent name conflicts.) Then, enter the name of each function preceded by an @ sign in the corresponding field in the mask dialog. For example, if the flow map function is placed in a function file name
+    <tt>f.m</tt>
+    , then the Flow Map field in the mask dialog should contain
+    <tt>"@f"</tt>
+    (without quotation marks).
+   </p>
+   <p>
+    As an alternative to creating function files, you can write
+    <a href="https://www.mathworks.com/help/matlab/matlab_prog/anonymous-functions.html">
+     anonymous functions
+    </a>
+    , such as
+   </p>
+   <pre>  @(x, u, parameters) parameters.A*x + parameters.B*u</pre>
+   <p>
+    directly into any of the
+    <i>
+     function handle
+    </i>
+    fields in the mask dialog.
+   </p>
+   <p>
+    <b>
+     How to define
+     \(f\)
+     ,
+     \(g\)
+     ,
+     \(C\)
+     , and
+     \(D\)
+     in hybrid systems with embedded functions
+    </b>
+    . To specify
+    \(f\)
+    ,
+    \(g\)
+    ,
+    \(C\)
+    , and
+    \(D\)
+    for a Hybrid System with Embedded Functions block, "Look inside" the block mask by either clicking the down arrow in the lower-left corner or selecting "Mask" > "Look Under Mask" from the context menu. Double-click on each MATLAB Function block to edit the respective functions. (There's nothing "magic" about the MATLAB function blocks. If desired, these blocks can be replaced with any other Simulink blocks that have the correct input and output dimensions.)
+   </p>
+   <h2 id="4">
+    Writing Functions for
+    \(f\)
+    ,
+    \(g\)
+    ,
+    \(C\)
+    , and
+    \(D\)
+   </h2>
+   <p>
+    Regardless of whether you are using a Hybrid System block with embedded or external functions, the definitions of
+    \(f\)
+    ,
+    \(g\)
+    ,
+    \(C\)
+    , and
+    \(D\)
+    follow the same form. When creating a system without inputs, each function must take two input arguments: the state "x" and parameters object "parameters". (The "parameters" argument is described later.) When creating a system with inputs, each function must, instead, have three input arguments: the state "x", the input "u", and a parameter object "parameters".
+   </p>
+   <p>
+    For both systems with and without inputs, each function must have a single output argument. For
+    <tt>f</tt>
+    and
+    <tt>g</tt>
+    , the output is a column vector that matches the size of "x". For
+    <tt>C</tt>
+    and
+    <tt>D</tt>
+    , the output is scalar that takes values in
+    \(\{\texttt{0}, \texttt{1}\}\)
+    .
+   </p>
+   <p>
+    Thus, example function signatures for systems without inputs are as follow:
+   </p>
+   <pre class="language-matlab">function xdot = f(x, parameters)
+function inC = C(x, parameters)
+function xplus = g(x, parameters)
+function inD = D(x, parameters)
+</pre>
+   <p>
+    For systems with inputs, the following function signatures can be used:
+   </p>
+   <pre class="language-matlab">function xdot = f(x, u, parameters)
+function inC = C(x, u, parameters)
+function xplus = g(x, u, parameters)
+function inD = D(x, u, parameters)
+</pre>
+   <p>
+    The names of the functions and arguments can be modified when using external functions, but for embedded functions the input arguments must match those given above (unless the names of the data signals are renamed in the
+    <b>
+     Ports and Data Manager
+    </b>
+    ).
+   </p>
+   <h2 id="5">
+    Defining Function Parameters
+   </h2>
+   <p>
+    Often, in addition to the state and input, the values return by
+    <tt>f</tt>
+    ,
+    <tt>g</tt>
+    ,
+    <tt>C</tt>
+    , and
+    <tt>D</tt>
+    will depend on some constants. For example, the flow map of the bouncing ball depends on the rate of acceleration due to gravity. One could simply define
+   </p>
+   <pre>  g = -9.8;</pre>
+   <p>
+    within the function, but this is bad practice. What will you do, for instance, if you want to sometimes simulate a bouncing ball on the Moon instead, where gravity is weaker? You would need to modify the function each time you change
+    <tt>g</tt>
+    . To avoid this, a
+    <tt>parameters</tt>
+    object, defined by the user, is given as the last input argument for each function. The
+    <tt>parameters</tt>
+    object can be any type of MATLAB object (e.g., an array or object), but the recommended approach is to use a
+    <tt>struct</tt>
+    because it allows new parameters to be added easily and makes the code easy to read. In an initialization script, a
+    <tt>parameters</tt>
+    struct can be created as follows:
+   </p>
+   <pre class="language-matlab">parameters = struct();
+parameters.A = [0, 1; 0, 0];
+parameters.B = [0; 1];
+parameters.optimizer = 'BFGS'; % Nonnumeric values are OK.
+</pre>
+   <p>
+    The
+    <tt>parameters</tt>
+    struct is passed to a hybrid system block by entering the name of the variable in the "Parameters" field of the mask dialog.
+   </p>
+   <p>
+    Then, within
+    <tt>f</tt>
+    ,
+    <tt>g</tt>
+    ,
+    <tt>C</tt>
+    , and
+    <tt>D</tt>
+    , parameters are accessed via the last input argument, as shown below.
+   </p>
+   <pre class="language-matlab">function xdot = f(x, u, parameters)
+    % Flow map
+    A = parameters.A;
+    B = parameters.B;
+    xdot = A*x + B*u;
+end
+</pre>
+   <p>
+    The last input argument
+    <tt>parameters</tt>
+    must be present (even if it is unused). For embedded functions, its name must be "parameters" (MATLAB may suggest replacing it with "~" if it is unused, but this will cause an error).
+   </p>
+   <p>
+    <b>
+     WARNING:
+    </b>
+    The
+    <tt>parameters</tt>
+    object should be constant while simulating a hybrid system. Modifying
+    <tt>parameters</tt>
+    within
+    <tt>f</tt>
+    ,
+    <tt>g</tt>
+    , etc., could produce unpredictable behavior because the hybrid solver sometimes backtracks in time (e.g., when searching for the time when a jump occurs). Therefore, all values that change during a solution must be included in the state vector
+    <tt>x</tt>
+    .
+   </p>
+   <h2 id="6">
+    Variable Initialization
+   </h2>
+   <p>
+    Before a Simulink model is run, all variables referenced in block parameters or the model configuration parameters must be defined in the MATLAB workspace. This can be done by entering the variables one-by-one in the MATLAB command window, but for the sake of quickly, easily, and accurately reproducing results, it is best to put the variable definitions into an initialization script. In this documentation we refer to the initialzation script as
+    <tt>initialize.m</tt>
+    .
+   </p>
+   <p>
+    Within
+    <tt>initialize.m</tt>
+    , it is typically necessary to define the following:
+   </p>
+   <div>
+    <ul>
+     <li>
+      Initial conditions (e.g.,
+      <tt>x0</tt>
+      ,
+      <tt>z0</tt>
+      , etc.)
+     </li>
+     <li>
+      Parameter objects, as described above
+     </li>
+     <li>
+      The maximum flow time
+      <tt>T</tt>
+     </li>
+     <li>
+      The maximum number of jumps
+      <tt>J</tt>
+     </li>
+     <li>
+      The relative error tolerance
+      <tt>RelTol</tt>
+     </li>
+     <li>
+      The maximum integration step size
+      <tt>MaxStep</tt>
+      .
+     </li>
+    </ul>
+   </div>
+   <p>
+    The following initialization script is used for the
+    <a href="/Example_1_2">bouncing ball model</a>
+    .
+   </p>
+   <pre class="language-matlab">
+% Initialization script for Bouncing Ball example.
+
+% Initial conditions
+x0 = [1; 0];
+          
+% Physical variables
+parameters = struct();
+parameters.gamma = -9.81; % Acceleration due to gravity.
+parameters.lambda = 0.9;  % Coefficient of restitution.
+
+% Simulation horizon
+T = 10;
+J = 30;                                                       
+                                                                        
+% Solver tolerances
+RelTol = 1e-6;
+MaxStep = 1e-2;
+
+</pre>
+   <p>
+    We define the values of
+    <tt>RelTol</tt>
+    and
+    <tt>MaxStep</tt>
+    because the default integration settings do not always produce simulations with the desired accuracy or speed. See
+    <a href="https://www.mathworks.com/help/matlab/ref/odeset.html#namevaluepairarguments">
+     odeset
+    </a>
+    for a description of
+    <tt>RelTol</tt>
+    ,
+    <tt>MaxStep</tt>
+    , and other solver settings. These parameters can have significant effects on the speed and accuracy of solutions. To modify other solver settings, open
+    <tt>Modeling>Model Settings>Solver</tt>
+    .
+   </p>
+   <p>
+    The name
+    <tt>T</tt>
+    should be used for the maximum flow time because the simulation stop time is automatically set to
+    <tt>T</tt>
+    whenever a HyEQ block is added to a model. Other variables names, however, such as
+    <tt>x0</tt>
+    ,
+    <tt>J</tt>
+    , and
+    <tt>parameters</tt>
+    , can be changed on a block-by-block basis so long as the names are consistent between the fields in the block mask dialogs and in the initialization script.
+   </p>
+   <p>
+    After initialization, the simulation is run by clicking the run button or selecting
+    <tt>Simulation>Start</tt>
+    .
+   </p>
+   <h2 id="7">
+    Postprocessing and Plotting solutions
+   </h2>
+   <p>
+    Similarly to the initialization script, a postprocessing script, which we will call
+    <tt>postprocess.m</tt>
+    , here, is used to generate plots of solutions after the simulation is run. Below is an example of
+    <tt>postprocess.m</tt>
+    for the bouncing ball example. The functions used to generate the plots are described in
+    <a href="/HybridPlotBuilder_demo">Creating plots with HybridPlotBuilder</a>
+    .
+   </p>
+   <pre class="language-matlab">
+%% Postprocessing script for Bouncing Ball example.
+
+% Construct a HybridArc object from (t, j, x) computed by Simulink so that
+% we can use the plotting tools associated with HybridArcs, namely
+% HybridPlotBuilder.
+sol = HybridArc(t, j, x);
+
+% Plot the solution vs. t.
+figure(1)
+clf
+plotFlows(sol)
+
+% Plot the solution in the phase plane.
+figure(2)
+clf
+plotPhase(sol)
+grid on
+
+% Plot the first component of the solution vs. t and j.
+figure(3)
+clf
+plotHybrid(sol.select(1))     
+grid on
+view(37.5,30)
+
+</pre>
+   <h2 id="8">
+    Automatically Running Initialization and Postprocessing Scripts
+   </h2>
+   <p>
+    The scripts
+    <tt>initialize.m</tt>
+    and
+    <tt>postprocess.m</tt>
+    , described above, can be run manually in the MATLAB editor or command window, but to run them automatically use
+    <i>
+     model callbacks
+    </i>
+    . To setup model callbacks, open the Simulink Library Browser and navigate to Hybrid Equations Toolbox > Other.
+   </p>
+   <p>
+    <img src="/images/set_callback_blocks.png" style="width: 100%; max-height: 140px; object-fit: contain"/>
+   </p>
+   <p>
+    Then, drag the "Set Initialization Script" and "Set Post-Processing Script" blocks to your model and double click on them. A file selection dialog will open that allows you to select a MATLAB .m script file to use in the callback. After a callback script is set, the "Set Initialization Script" and "Set Post-Processing Script" blocks can be deleted from your model.
+   </p>
+   <p>
+    To define model callbacks manually or remove existing callbacks:
+   </p>
+   <div>
+    <ol>
+     <li>
+      open the "Modeling" tab in Simulink
+     </li>
+     <li>
+      open the "Modeling Setup" menu
+     </li>
+     <li>
+      open "Model Properties"
+     </li>
+     <li>
+      open the "Callbacks" tab.
+     </li>
+    </ol>
+   </div>
+   <p>
+    Use the
+    <tt>InitFcn</tt>
+    callback to specify code to run before the Simulink model starts and
+    <tt>StopFcn</tt>
+    to specify code to run after the model finishes. Typically, the
+    <tt>InitFcn</tt>
+    callback contains code that calls an initialization script, such as
+   </p>
+   <pre class="language-matlab">initialize;
+</pre>
+   <p>
+    and the
+    <tt>StopFcn</tt>
+    callback calls a post-processing script, such as
+   </p>
+   <pre class="language-matlab">postprocess;
+</pre>
+  </div>
+ </body>
+</html>{% endraw %}

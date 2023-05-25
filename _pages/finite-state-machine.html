@@ -1,0 +1,295 @@
+---
+layout: single
+title: |
+    CPS Component: Finite State Machine
+category: simulink
+permalink: /simulink/finite-state-machine
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    <meta "cps"="" category="simulink" id="github_pages" permalink="finite-state-machine">
+    </meta>
+   </p>
+   <p>
+    In this example, a finite state machine (FSM) is modeled in Simulink as a hybrid system with an input, where the input triggers the discrete transitions (or jumps).
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Steps to Run Model
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Simulink Model
+      </a>
+     </li>
+     <li>
+      <a href="#7">
+       Example Output
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the package
+    <tt>hybrid.examples.finite_state_machine</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      initialize.m
+     </li>
+     <li>
+      fsm.slx
+     </li>
+     <li>
+      postprocess.m
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <tt>Examples\+hybrid\+examples\finite_state_machine</tt>
+    (clicking this link changes your working directory).
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    A
+    <i>
+     finite state machine
+    </i>
+    (FSM), also called a
+    <i>
+     deterministic finite automaton
+    </i>
+    (DFA) is a system with inputs, states, and outputs taking values from finite sets that are updated at discrete transitions (or jumps) triggered by its inputs. For a FSM with state
+    \(q \in Q\)
+    and input
+    \(u \in \Sigma,\)
+    the update mechanism at jumps is determined by the difference equation
+   </p>
+   <p>
+    \[q^+ = \delta(q,u) \qquad (q,u) \in Q \times \Sigma
+\]
+   </p>
+   <p>
+    and the output of the system is
+   </p>
+   <p>
+    \[y = h(q) \qquad q \in Q.\]
+   </p>
+   <p>
+    The FSM system is modeled as a hybrid system with the following data:
+   </p>
+   <p>
+    \[\begin{array}{ll}
+f(q,u):=\left[\begin{array}{c}
+   0 \\
+   0
+ \end{array}\right],
+   & C := \{ (q,u) \in Q \times \Sigma \mid \delta(q, u) = q \}
+\\
+g(q,u):= \delta(q, u) = \left[ \begin{array}{c}
+                   u_{1} + u_2 \\ u_1 - u_{2}
+               \end{array}\right],
+   & D: = \{ (q,u) \in Q \times \Sigma \mid \delta(q, u) \neq q\}
+\\
+  y:= h(q) = q
+\end{array}\]
+   </p>
+   <p>
+    where the state is given by
+    \(q = (q_{1}, q_{2})\in Q := \{0, 1, 2\}\times \{-1, 0, 1\}\)
+    and the input is given by
+    \(u = (u_{1}, u_{2})\in \Sigma := \{0, 1\}\times \{0, 1\}\)
+    .
+   </p>
+   <h2 id="3">
+    Steps to Run Model
+   </h2>
+   <p>
+    The following procedure is used to simulate this example using the model in the file
+    <tt>FSM_example.slx</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      Open
+      <tt>hybrid.examples.finite_state_machine.fsm.slx</tt>
+      in Simulink (clicking this link changes your working directory and opens the model).
+     </li>
+     <li>
+      Double-click the block labeled
+      <i>
+       Double Click to Initialize
+      </i>
+      .
+     </li>
+     <li>
+      To start the simulation, click the
+      <i>
+       run
+      </i>
+      button or select
+      <tt>Simulation>Run</tt>
+      .
+     </li>
+     <li>
+      Once the simulation finishes, click the block labeled
+      <i>
+       Double Click to Plot Solutions
+      </i>
+      . Several plots of the computed solution will open.
+     </li>
+    </ul>
+   </div>
+   <h2 id="4">
+    Simulink Model
+   </h2>
+   <p>
+    The following diagram shows the Simulink model of the FSM. When the Simulink model is open, the blocks can be viewed and modified by double clicking on them.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_finite_state_machine_01.png" vspace="5"/>
+   <p>
+    The interior of the
+    <tt>FSM</tt>
+    block is shown here.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_finite_state_machine_02.png" vspace="5"/>
+   <p>
+    The functions used to define
+    \(g, C,\)
+    and
+    \(D\)
+    in the
+    <tt>FSM</tt>
+    blocks are included below. When using the finite state machine block, these functions should be modified to in accordance with the system being modeled.
+   </p>
+   <p>
+    <b>
+     flow set
+    </b>
+    <tt>C</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inC  = C(q, u) 
+    % Flow set indicator function for finite state machine.
+    qplus = zeros(size(q)); % dynamics of the q state, e.g.,     qplus(1) = u(1)+u(2);
+    qplus(1) = u(1) + u(2);
+    qplus(2) = u(1) - u(2);
+    if q(1)==qplus(1) && q(2)==qplus(2)
+        inC = 1; % report flow
+    else
+        inC = 0; % do not report flow
+    end
+end
+
+</pre>
+   <p>
+    <b>
+     jump map
+    </b>
+    <tt>g</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function qplus = g(q, u)
+    % Jump map for finite state machine.
+    qplus = zeros(size(q));
+    qplus(1) = u(1) + u(2);
+    qplus(2) = u(1) - u(2);
+end
+
+</pre>
+   <p>
+    <b>
+     jump set
+    </b>
+    <tt>D</tt>
+    <b>
+     block
+    </b>
+   </p>
+   <pre class="language-matlab">
+function inD  = D(q, u) 
+    % Jump set indicator for finite state machine.
+
+    qplus = zeros(size(q)); % dynamics of the q state e.g., 
+    qplus(1) = u(1) + u(2);
+    qplus(2) = u(1) - u(2);
+    if q(1)==qplus(1) && q(2)==qplus(2)
+        inD = 0; % do not report jump
+    else
+        inD = 1; % report jump
+    end
+end
+
+</pre>
+   <h2 id="7">
+    Example Output
+   </h2>
+   <p>
+    Let the input function be
+   </p>
+   <p>
+    \[\begin{array}{ll}
+u_{1}(t,u):=\left\{\begin{array}{ll}
+   1 & \textrm{if } t\in[2k,\ 2k + 0.4) = [0, 0.4) \cup [2, 2.4) \cup \cdots \\
+   0 & \textrm{otherwise} \\
+ \end{array}\right., \\ \\
+u_{2}(t,u):=\left\{\begin{array}{ll}
+   1 & \textrm{if } t\in[3k + 1,\ 3k + 1.6) = [1, 1.6) \cup [4, 4.6) \cup \cdots\\
+   0 & \textrm{otherwise} \\
+ \end{array}\right.
+\end{array}
+\]
+   </p>
+   <p>
+    for all
+    \(k\in \mathbb{N}\)
+    .
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_finite_state_machine_03.png" vspace="5"/>
+   <p>
+    The solution to the FSM system from
+    \(x(0,0)=[0,0]^\top\)
+    and with
+    <tt>T=10</tt>
+    ,
+    <tt>J=20</tt>
+    ,
+    <tt>rule=1</tt>
+    shows the mode transition of the FSM system. By comparing with the prior figure, we see that
+    \(q_1 = u_1 + u_2\)
+    and
+    \(q_2 = u_1 - u_1,\)
+    as expected.
+   </p>
+   <img alt="" hspace="5" src="/images/CPS_finite_state_machine_04.png" vspace="5"/>
+  </div>
+ </body>
+</html>{% endraw %}

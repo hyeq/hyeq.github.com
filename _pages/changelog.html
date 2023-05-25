@@ -2,6 +2,7 @@
 layout: single
 title: |
     Change Log for the Hybrid Equations Toolbox
+permalink: changelog
 ---
 {% raw %}
 <!DOCTYPE html
@@ -9,6 +10,10 @@ title: |
 <html>
  <body>
   <div class="content">
+   <p>
+    <meta category="" id="github_pages" permalink="changelog">
+    </meta>
+   </p>
    <h2>
     Contents
    </h2>
@@ -16,18 +21,54 @@ title: |
     <ul>
      <li>
       <a href="#1">
-       New Features in Version 3.0
+       Version 3.1
       </a>
      </li>
      <li>
-      <a href="#4">
+      <a href="#2">
+       Version 3.0
+      </a>
+     </li>
+     <li>
+      <a href="#5">
        Changes Between Builds
       </a>
      </li>
     </ul>
    </div>
    <h2 id="1">
-    New Features in Version 3.0
+    Version 3.1
+   </h2>
+   <p>
+    Changes in version 3.1.
+   </p>
+   <div>
+    <ul>
+     <li>
+      Added
+      <tt>HybridPlotBuilder.reorderLegendEntries</tt>
+      ,
+      <tt>HybridPlotBuilder.circshiftLegendEntries</tt>
+      ,
+      <tt>HybridPlotBuilder.legendOptions</tt>
+      .
+     </li>
+     <li>
+      Changed behavior of
+      <tt>HybridPlotBuilder</tt>
+      legend options so that the default options are used regardless of options used in current legend.
+      <b>
+       This means that legend options must be set in the last call to
+       <tt>HybridPlotBuilder.legend</tt>
+       or by calling
+       <tt>HybridPlotBuilder.legendOptions</tt>
+       after all legends are added.
+      </b>
+     </li>
+    </ul>
+   </div>
+   <h2 id="2">
+    Version 3.0
    </h2>
    <p>
     Version 3.0 of the Hybrid Equations Toolbox is a substantial update to components throughout the toolbox.
@@ -52,7 +93,7 @@ title: |
     <b>
      Interconnected Hybrid Systems.
     </b>
-    It is now possible, in MATLAB, to define several hybrid subsystem systems with inputs and outputs, such as a plant and a controller, then then link them together to form a composite hybrid system. Solutions to the composite system can be computed like any other system.
+    It is now possible, in MATLAB, to define several hybrid subsystem systems with inputs and outputs, such as a plant and a controller, then link them together to form a composite hybrid system. Solutions to the composite system can be computed like any other system.
    </p>
    <p>
     <b>
@@ -176,7 +217,7 @@ title: |
       <b>
        Backward Compatibility.
       </b>
-      All code that works in Toolbox version 2.04 is expected to work in v3.0 without modification. Version 3.0 is comptatible with MATLAB versions back to R2014b.
+      All code that works in Toolbox version 2.04 is expected to work in v3.0 without modification. Version 3.0 is compatible with MATLAB versions back to R2014b.
      </li>
      <li>
       <b>
@@ -186,7 +227,7 @@ title: |
      </li>
     </ul>
    </div>
-   <h2 id="4">
+   <h2 id="5">
     Changes Between Builds
    </h2>
    <p>

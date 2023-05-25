@@ -1,0 +1,395 @@
+---
+layout: single
+title: |
+    Behavior in the Intersection of C and D
+category: simulink
+permalink: /simulink/intersection-of-C-and-D
+---
+{% raw %}
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+ <body>
+  <div class="content">
+   <p>
+    <meta category="simulink" id="github_pages" permalink="intersection-of-C-and-D">
+    </meta>
+   </p>
+   <p>
+    This example demonstrates how to define the behavior of simulations in the intersection of the flow and jump sets.
+   </p>
+   <h2>
+    Contents
+   </h2>
+   <div>
+    <ul>
+     <li>
+      <a href="#2">
+       Mathematical Model
+      </a>
+     </li>
+     <li>
+      <a href="#3">
+       Priority Rules for Intersection of C and D
+      </a>
+     </li>
+     <li>
+      <a href="#4">
+       Jump Priority (
+       <tt>rule = 1</tt>
+       )
+      </a>
+     </li>
+     <li>
+      <a href="#5">
+       Flow Priority (
+       <tt>rule = 2</tt>
+       )
+      </a>
+     </li>
+     <li>
+      <a href="#7">
+       Random Priority (
+       <tt>rule = 3</tt>
+       )
+      </a>
+     </li>
+     <li>
+      <a href="#8">
+       Numerical Limitations
+      </a>
+     </li>
+    </ul>
+   </div>
+   <p>
+    The files for this example are found in the
+    <a href="/MATLAB_packages">package</a>
+    <tt>hybrid.examples.behavior_in_C_intersection_D</tt>
+    :
+   </p>
+   <div>
+    <ul>
+     <li>
+      initialize.m
+     </li>
+     <li>
+      hybrid_priority.slx
+     </li>
+     <li>
+      postprocess.m
+     </li>
+    </ul>
+   </div>
+   <p>
+    The contents of this package are located in
+    <tt>Examples\+hybrid\+examples\behavior_in_C_intersection_D</tt>
+    (clicking this link changes your working directory).
+   </p>
+   <h2 id="2">
+    Mathematical Model
+   </h2>
+   <p>
+    Consider the hybrid system with data
+   </p>
+   <p>
+    \[\begin{array}{ll}
+f(x) := x & C:= [1, 3] \cup [5, 9] \\ \\
+g(x) := \left\{\begin{array}{ll}
+                      \mathrm{round}(x+1) & \textrm{if } x \leq 6 \\
+                      0 & \textrm{if } x = 7
+\end{array}\right. & D:= \{0\}\cup [2, 6] \cup \{7\}.
+\end{array}\]
+   </p>
+   <p>
+    The sets
+    \(C\)
+    and
+    \(D\)
+    are visualized here:
+   </p>
+   <p>
+    \[\begin{array}{cccccccccccc}
+   C: &   & [ &   & ] &   & [ &   &   &   & ]
+\\ D: & * &   & [ &   &   &   & ] & * &   &
+\\ \hline
+   x: &     0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9
+\end{array}\]
+   </p>
+   <p>
+    Solutions to this model are not unique because solutions are allowed to both flow or jump everywhere in
+    \([2, 3) \cup [5, 6] \cup \{7\}.\)
+    (Note that despite
+    \(3\)
+    being in
+    \(C\cap D\)
+    , it is not possible to flow because the trajectory would immediately leave
+    \(C\)
+    .)
+   </p>
+   <h2 id="3">
+    Priority Rules for Intersection of C and D
+   </h2>
+   <p>
+    When solving hybrid systems, the HyEQ Toolbox only computes a single solution, so we must specify which of the various possible solutions are computed. This is done is by defining a variable
+    <tt>rule</tt>
+    in the MATLAB workspace. The value of
+    <tt>rule</tt>
+    specifies whether flows or jumps have priority in
+    \(C \cap D\)
+    .
+   </p>
+   <div>
+    <ul>
+     <li>
+      If
+      <tt>rule = 1</tt>
+      , jumps have priority.
+     </li>
+     <li>
+      If
+      <tt>rule = 2</tt>
+      , flows have priority.
+     </li>
+     <li>
+      If
+      <tt>rule = 3</tt>
+      , then flowing and jumping is randomly selected at each time step.
+     </li>
+    </ul>
+   </div>
+   <p>
+    The following simulations show the use of the variable
+    <tt>rule</tt>
+    priority of flowing vs jumping when computing solutions inside
+    \(C\cap D\)
+    .
+   </p>
+   <h2 id="4">
+    Jump Priority (
+    <tt>rule = 1</tt>
+    )
+   </h2>
+   <p>
+    When
+    <tt>rule=1</tt>
+    , jumps have priorty, so anytime a (numerical) solution
+    \(x\)
+    is in
+    \(C\cap D\)
+    , then
+    \(x\)
+    will jump. For the model presented above, this effectively restricts
+    \(C\)
+    as shown here:
+   </p>
+   <p>
+    \[\begin{array}{rccccccccccc}
+ C \textrm{ (effective)}: &   & [ & ) &   &   &   & ( &\circ&   & ]
+\\ D:                     & * &   & [ &   &   &   & ] &  *  &   &
+\\ \hline
+ x:                       & 0 & 1 & 2 & 3 & 4 & 5 & 6 &  7  & 8 & 9
+\end{array}\]
+   </p>
+   <p>
+    The following plot shows a solution from
+    \(x0=0\)
+    with jump priority (
+    <tt>rule=1</tt>
+    ). The solution always jumps except when
+    \(x\)
+    is in
+    \([1, 2) \subset C \setminus D\)
+    .
+   </p>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_01.png" vspace="5"/>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_02.png" vspace="5"/>
+   <h2 id="5">
+    Flow Priority (
+    <tt>rule = 2</tt>
+    )
+   </h2>
+   <p>
+    When
+    <tt>rule=2</tt>
+    , flows have priorty, so anytime a solution
+    \(x\)
+    is in
+    \(C\cap D\)
+    , then
+    \(x\)
+    will flow unless
+    \(x\)
+    is on the boundary of
+    \(C\)
+    and
+    \(f(x)\)
+    points out of
+    \(C\)
+    . For the model presented above, this effectively restricts
+    \(C\)
+    as shown here:
+   </p>
+   <p>
+    \[\begin{array}{rccccccccccc}
+   C:                       &   & [ &   & ] &   & [ &   &   &   & ]
+\\ D \textrm{ (effective)}: & * &   &   & ( &   & ) &   &   &   &
+\\ \hline
+   x:                       & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9
+\end{array}\]
+   </p>
+   <p>
+    The following plot shows a solution from
+    \(x0=0\)
+    with flow priority (
+    <tt>rule=2</tt>
+    ). The solution only jumps when
+    \(x\)
+    is in
+    \(\{0\} \cup (3, 4) = D \setminus C\)
+    . At the end of the solution,
+    \(x\)
+    leaves
+    \(C \cup D\)
+    and terminates.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_03.png" vspace="5"/>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_04.png" vspace="5"/>
+   <p>
+    Note that the stopping logic is implemented such that when the state of the hybrid system is not in
+    \((C \cup D)\)
+    , then the simulation is stopped. In particular, if this condition becomes true while flowing, then the last value of the computed solution will not belong to
+    \(C\)
+    .
+   </p>
+   <h2 id="7">
+    Random Priority (
+    <tt>rule = 3</tt>
+    )
+   </h2>
+   <p>
+    When
+    <tt>rule=3</tt>
+    , then at each time step that a solution
+    \(x\)
+    is in
+    \(C \cap D,\)
+    there is 50% chance of jumping and 50% chance of flowing.
+   </p>
+   <p>
+    For the model presented above, the intersection of
+    \(C\)
+    and
+    \(D\)
+    is illustrated here. Within the intersection, either flowing or jumping can occur in numerical solutions.
+   </p>
+   <p>
+    \[\begin{array}{cccccccccccc}
+C \cap D: &   &   & [ & ] &   & [ & ] & * &   &
+\\ \hline
+x:        & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9
+\end{array}\]
+   </p>
+   <p>
+    A solution computed with
+    <tt>rule=3</tt>
+    is shown below. The first interval of flow ends around
+    \(t=0.7\)
+    , shortly after the solution enters
+    \([2,3]\)
+    . Because there is a 50-50 chance of jumping at each time step, jumps tend to happen very quickly when a solution enters an interval in
+    \(C \cap D\)
+    . The solution then jumps several times in
+    \(D \setminus C\)
+    until
+    \(x = 7 \in C\cap D\)
+    . The first time this happens, the solution happens to jump, reseting
+    \(x\)
+    to
+    \(0\)
+    , but the second time it happens to flow, causing it to leave
+    \(D\)
+    and eventually leave
+    \(C\)
+    as well.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_05.png" vspace="5"/>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_06.png" vspace="5"/>
+   <h2 id="8">
+    Numerical Limitations
+   </h2>
+   <p>
+    Isolated points in
+    \(D\)
+    that are also in
+    \(C\)
+    , such as
+    \(x=7\)
+    , require extra care. If a solution starts at
+    <tt>x0=6.1</tt>
+    , then it will almost certainly flow pass
+    \(7 \in D\)
+    without jumping (even if
+    <tt>rule=1</tt>
+    ) because the odds of the numerical value of
+    <tt>x</tt>
+    ever being exactly
+    \(7\)
+    is minuscule. Thus, from a numerical standpoint,
+    <tt>x</tt>
+    never enters
+    \(D\)
+    . Isolated points in
+    \(D\)
+    on the boundary of
+    \(C\)
+    require similar care, as the solution is likely to terminate rather than enter the jump set.
+   </p>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_07.png" vspace="5"/>
+   <img alt="" hspace="5" src="/images/Help_behavior_in_C_intersection_D_08.png" vspace="5"/>
+   <p>
+    Furthermore, suppose the jump map given above is modified by removing the
+    \(\mathrm{round}\)
+    function, as shown here
+   </p>
+   <p>
+    \[g(x) := \left\{\begin{array}{ll}
+                      x+1 & \textrm{if } x \leq 6 \\
+                      0 & \textrm{if } x = 7.
+\end{array}\right. \]
+   </p>
+   <p>
+    For a solution from
+    <tt>x0=1</tt>
+    with jump priority
+    <tt>rule=1</tt>
+    , one might expect that a solution will flow until
+    \(x = 2\in D,\)
+    jump several times until
+    \(x=7\in D\)
+    and reset to
+    \(x=0\)
+    . This will not happen, however, because the numerical solver cannot determine the exact position of
+    \(x\)
+    when it enters
+    \(D\)
+    at
+    \(x=2\)
+    , so the solution flows slightly past
+    \(2\)
+    , say, to
+    \(2.0001\)
+    . Then, after several jumps,
+    \(x\)
+    is at
+    \(7.0001 \not\in D\)
+    , at which point it flows until it leaves
+    \(C.\)
+    Therefore, one must be careful in the design of
+    \(C\)
+    and
+    \(D\)
+    to ensure that numerical calculations do not create undesired behavior.
+   </p>
+  </div>
+ </body>
+</html>{% endraw %}
