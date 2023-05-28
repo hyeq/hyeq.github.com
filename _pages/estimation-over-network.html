@@ -322,23 +322,6 @@ L := \left[\begin{tabular}{c}
      </li>
     </ul>
    </div>
-   <pre class="codeinput">% Run the initialization script.
-hybrid.examples.network_estimation.initialize
-
-% Set seed for random number generator so we have reproducable outputs.
-rng(2)
-
-% Run the Simulink model.
-warning('off','Simulink:Commands:LoadingOlderModel')
-simulink_model_path = which('hybrid.examples.network_estimation.network_est');
-sim(simulink_model_path)
-close_system
-close all
-
-% Convert the values t, j, and x output by the simulation into a HybridArc object.
-solz = HybridArc(tz, jz, z);
-solhatz = HybridArc(thatz, jhatz, hatz);
-</pre>
    <h2 id="4">
     Simulink Model
    </h2>
@@ -355,11 +338,6 @@ solhatz = HybridArc(thatz, jhatz, hatz);
     <tt>C</tt>
     , etc., are shown below. When the Simulink model is open, the blocks can be viewed and modified by double clicking on them.
    </p>
-   <pre class="codeinput">% Open .slx model. A screenshot of the subsystem will be
-% automatically included in the published document.
-model_path = 'hybrid.examples.network_estimation.network_est';
-open_system(which(model_path))
-</pre>
    <img alt="" hspace="5" src="/images/Example_network_estimation_01.png" vspace="5"/>
    <p>
     The Simulink blocks for the hybrid systems in this example are included below.
@@ -632,28 +610,7 @@ end
     \(t = T\)
     , with a small error.
    </p>
-   <pre class="codeinput">f = figure(1);
-clf
-f.Position = [100 100 740 500]; % Increase width
-hpb = HybridPlotBuilder().subplots('on').color('matlab');
-hpb.legend({'System state $x_1$','System state $x_2$',...
-    'System state $x_3$','System state $x_4$'},'Location', 'best')...
-    .plotFlows(solz)
-hold on
-hpb.legend({'Estimation $\hat{x}_1$',...
-    'Estimation $\hat{x}_2$','Estimation $\hat{x}_3$',...
-    'Estimation $\hat{x}_4$'},'Location', 'eastoutside')...
-    .plotFlows(solhatz.select(1:4))
-</pre>
    <img alt="" hspace="5" src="/images/Example_network_estimation_02.png" vspace="5"/>
-   <pre class="codeinput">% Close the Simulink file.
-close_system
-warning('on','Simulink:Commands:LoadingOlderModel') % Renable warning.
-
-% Navigate to the doc/ directory so that code is correctly included with
-% "<include>src/...</include>" commands.
-cd(hybrid.getFolderLocation('doc'))
-</pre>
    <h2 id="8">
     References
    </h2>

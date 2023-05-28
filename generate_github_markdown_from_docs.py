@@ -69,7 +69,6 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
 
     category = ""
     permalink_base = ""
-    permalink = ""
 
     with open(in_path, 'r') as fp:
         soup = bs4.BeautifulSoup(fp.read(), 'html.parser', preserve_whitespace_tags=["tt", "pre", "code"])
@@ -88,10 +87,23 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         if meta:
             # Because of these lines, every documentation page must have a permalink and a category, if the meta block
             # is included. They may be empty strings.
-            permalink_base = meta["permalink"]
-            category = meta["category"]
+            if "permalink" in meta.attrs:
+                permalink_base = meta["permalink"]
+            else:
+                permalink_base = file_base
+            if "category" in meta.attrs:
+                category = meta["category"]
 
-            print(f"Found meta. category={category}, permalink={permalink_base}")
+            if "hide_from_website" in meta.attrs:
+                # Skip processing this file, so it is not included in the website.
+                return
+
+        if category:
+            permalink = "/" + category + "/" + permalink_base
+        else:
+            permalink = "/" + permalink_base
+
+        print(f"Category={category}, permalink_base={permalink_base}, permalink={permalink}")
 
         # Remove the footer "Published with MATLAB R2022b" that is appended by MATLAB.
         def is_footer(html_tag):
@@ -158,49 +170,41 @@ def translate_matlab_html_to_github_wiki_markdown(file_name, in_dir, out_dir):
         for element in soup(text=lambda text: isinstance(text, Comment)):
             element.extract()
 
-    # permalink_last = permalink.split('/')[-1]
     out_path = os.path.join(out_dir, permalink_base+".html")
-    if permalink_base and not (permalink_base == file_base):
-        # permalink_file_name = permalink + '.html'
-        redirect_path = os.path.join(out_dir, file_name)
-        print(f'Redirecting {redirect_path} to {out_path}')
+
+    # If a permalink was given
+    if not permalink == "/" + file_base:
+        redirect_path = os.path.join(out_dir, file_base + "-redirect.html")
+        print(f'Redirect from {file_base} to {permalink}')
 
         # Write the redirect file.
         with open(redirect_path, 'w', encoding="utf-8") as redirect_file:
-            if category:
-                category_prefix = f'/{category}'
-            else:
-                category_prefix = ''
-            permalink = f'{category_prefix}/{permalink_base}'
-            print(f'Permalink = {permalink} from base = {permalink_base} with category={category}')
-
             redirect_content = redirect_format.format(original_filename=file_base, permalink=permalink)
             redirect_file.write(redirect_content)
     else:
         out_path = os.path.join(out_dir, file_name)
 
-    if not permalink:
-        permalink = permalink_base
+    # if not permalink:
+    #     permalink = permalink_base
 
     # Check that the output file does not exist.
-    if os.path.isfile(out_path):
-        raise FileExistsError(f'The output file {out_path} already exists')
+    # if os.path.isfile(out_path):
+    #     raise FileExistsError(f'The output file {out_path} already exists')
 
     # Write the output file.
+    # Build header
+    header = jekyll_header_format.format(title=title)
+    if category:
+        header += category_format.format(category=category)
+        # category=None
+    if permalink_base:
+        # header += permalink_format.format(permalink=f'/{category}/{permalink}')
+        header += permalink_format.format(permalink=permalink)
+
+    #     # permalink=None
+    header += "\n---\n"
     with open(out_path, 'w', encoding="utf-8") as outfile:
-        # Build header
-        header = jekyll_header_format.format(title=title)
-        if category:
-            header += category_format.format(category=category)
-            # category=None
-        if permalink_base:
-            # header += permalink_format.format(permalink=f'/{category}/{permalink}')
-            header += permalink_format.format(permalink=permalink)
-
-        #     # permalink=None
-        header += "\n---\n"
         outfile.write(header)
-
         outfile.write("{% raw %}\n")
         # We use formatter=None to prevent converting "&", "<", etc. into HTML entities (e.g., "&amp;")
         outfile.write(soup.prettify(formatter=None))

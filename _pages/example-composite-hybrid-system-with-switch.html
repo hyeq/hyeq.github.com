@@ -120,7 +120,8 @@ sys.setInput(controller_1, @(z_plant) z_plant); % '~'s omitted
     for the corresponding subsystems.
    </p>
    <pre class="codeinput">x0 = {[10; 0], [], [], 1};
-sol = sys.solve(x0, [0, 100], [0, 100])
+config = HybridSolverConfig('Refine', 8); % 'Refine' option makes the plots smoother.
+sol = sys.solve(x0, [0, 100], [0, 100], config)
 </pre>
    <pre class="codeoutput">sol = 
   CompositeHybridSolution with properties:
@@ -129,9 +130,9 @@ sol = sys.solve(x0, [0, 100], [0, 100])
                       x0: [7×1 double]
                       xf: [7×1 double]
        termination_cause: T_REACHED_END_OF_TSPAN
-                       t: [285×1 double]
-                       j: [285×1 double]
-                       x: [285×7 double]
+                       t: [2007×1 double]
+                       j: [2007×1 double]
+                       x: [2007×7 double]
             flow_lengths: [39×1 double]
               jump_times: [38×1 double]
     shortest_flow_length: 0

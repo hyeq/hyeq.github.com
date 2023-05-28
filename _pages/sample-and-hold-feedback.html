@@ -193,16 +193,6 @@ y = h(x) := x,
     \(u\in \mathbb{R}\)
     .
    </p>
-   <pre class="codeinput">% Run the initialization script.
-hybrid.examples.zoh_feedback_control.initialize
-
-% Run the Simulink model.
-warning('off','Simulink:Commands:LoadingOlderModel')
-simulink_model_path = which('hybrid.examples.zoh_feedback_control.zoh_feedback');
-sim(simulink_model_path)
-close_system
-close all
-</pre>
    <h2 id="4">
     Simulink Model
    </h2>
@@ -217,11 +207,6 @@ close all
     <tt>y</tt>
     of the physical process at every sampling instant.
    </p>
-   <pre class="codeinput">% Open .slx model. A screenshot of the subsystem will be
-% automatically included in the published document.
-model_path = 'hybrid.examples.zoh_feedback_control.zoh_feedback';
-open_system(which(model_path))
-</pre>
    <img alt="" hspace="5" src="/images/Example_zoh_feedback_control_01.png" vspace="5"/>
    <h2 id="5">
     Continuous-Time Plant
@@ -277,19 +262,7 @@ end
    <p>
     A solution to the system in this example is plotted below.
    </p>
-   <pre class="codeinput">hybrid.examples.zoh_feedback_control.postprocess
-</pre>
    <img alt="" hspace="5" src="/images/Example_zoh_feedback_control_02.png" vspace="5"/>
-   <pre class="codeinput">% Clean up. It's important to include an empty line before this comment so it's
-% not included in the HTML.
-
-% Close the Simulink file.
-close_system
-warning('on','Simulink:Commands:LoadingOlderModel') % Renable warning.
-
-% Change to the doc directory so that the example code is correctly included.
-cd(hybrid.getFolderLocation('doc'))
-</pre>
   </div>
  </body>
 </html>{% endraw %}
