@@ -3,8 +3,8 @@ main:
     # - title: "About"
     #   url: /about
     - title: MATLAB
-      url: /matlab/
+      url: /matlab
     - title: Simulink
-      url: /simulink/
+      url: /simulink
     - title: Examples
-      url: /examples/
+      url: /examples
